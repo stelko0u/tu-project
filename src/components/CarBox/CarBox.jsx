@@ -28,11 +28,11 @@ export default function CarBox({ car }) {
         <span className="flex absolute bottom-1/3 right-2 bg-primary text-white px-2 py-1 rounded-md">
           <p>$ {car.price.toLocaleString()}</p>
         </span>
-        {/* <img
+        <img
           src={car.photos?.[0] || "placeholder.jpg"}
           alt={car.model}
           className="w-full h-56 object-cover rounded-md"
-        /> */}
+        />
         <div className="absolute inset-0 bg-[linear-gradient(to_bottom_left,rgba(30,30,30,1)_0%,rgba(30,30,30,0)_15%,rgba(30,30,30,0)_100%)]"></div>
 
         <span className="flex absolute top-2 right-2 text-white gap-1">

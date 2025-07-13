@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-// import Dropzone from "../../components/DropZone/DropZone";
+import Dropzone from "../../components/DropZone/DropZone";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getFirestore, collection, addDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
@@ -424,9 +424,9 @@ function CarForm() {
             ))}
           </div>
 
-          {/* <Dropzone
+          <Dropzone
             onDrop={(acceptedFiles) => setFiles((prevFiles) => [...prevFiles, ...acceptedFiles])}
-          /> */}
+          />
           <div className="flex justify-end mt-4">
             <input
               type="submit"

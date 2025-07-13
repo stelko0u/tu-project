@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-// import Dropzone from "../../components/DropZone/DropZone";
+import Dropzone from "../../components/DropZone/DropZone";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getFirestore, doc, updateDoc, getDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
@@ -459,9 +459,9 @@ function EditForm() {
               </div>
             ))}
           </div>
-          {/* <Dropzone
+          <Dropzone
             onDrop={(acceptedFiles) => setFiles((prevFiles) => [...prevFiles, ...acceptedFiles])}
-          /> */}
+          />
           <div className="flex justify-end mt-4">
             <input
               type="submit"
