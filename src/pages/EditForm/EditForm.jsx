@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 // import Dropzone from "../../components/DropZone/DropZone";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { getFirestore, collection, addDoc } from "firebase/firestore";
+import { getFirestore, doc, updateDoc, getDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { X } from "lucide-react";
 
-function CarForm() {
+function EditForm() {
+  const { id: carId } = useParams();
   const [selectedStartYear, setSelectedStartYear] = useState("");
   const [endYearOptions, setEndYearOptions] = useState([]);
   const [selectedFeatures, setSelectedFeatures] = useState([]);
@@ -13,67 +15,36 @@ function CarForm() {
   const [models, setModels] = useState([]);
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [views, setViews] = useState(0);
   const [carInfo, setCarInfo] = useState({
     brand: "",
     model: "",
     gearbox: "",
     color: "",
-    price: 0,
+    price: null,
     owner: "",
     fuelType: "",
-    power: 0,
-    displacement: 0,
-    odometer: 0,
-    phone: "",
-    views: 0,
-    likes: [],
+    power: null,
+    displacement: null,
+    odometer: null,
   });
   const [error, setError] = useState(null);
+
+  const navigate = useNavigate();
+
   const startYear = 1920;
   const endYear = 2025;
-  const navigate = useNavigate();
   const years = [];
   for (let year = startYear; year <= endYear; year++) {
     years.push(year);
   }
-
-  const handleStartYearChange = (event) => {
-    const selectedYear = parseInt(event.target.value, 10);
-    setSelectedStartYear(selectedYear);
-    const filteredEndYears = years.filter((year) => year >= selectedYear);
-    setEndYearOptions(filteredEndYears);
-  };
-
-  // const handleChange = (e) => {
-  //   const { name, value } = e.target;
-  //   setCarInfo({
-  //     ...carInfo,
-  //     [name]: value,
-  //   });
-  // };
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-
-    // Check if the field is a number, and convert it if necessary
-    const newValue =
-      name === "price" || name === "power" || name === "displacement" || name === "odometer"
-        ? parseFloat(value) || 0 // Convert to number, default to 0 if NaN
-        : value;
-
-    setCarInfo({
-      ...carInfo,
-      [name]: newValue,
-    });
-  };
 
   const brandAndModels = {
     Audi: [
       "80",
       "90",
       "100",
-      "А1",
-      "А2",
+      "A1",
+      "A2",
       "A3",
       "A4",
       "A5",
@@ -105,6 +76,142 @@ function CarForm() {
     Chevrolet: ["Malibu", "Impala", "Camaro", "Corvette", "Equinox", "Traverse"],
     Jaguar: ["XE", "XF", "F-Type", "E-Pace", "F-Pace", "I-Pace"],
     Subaru: ["Impreza", "Forester", "Outback", "XV", "BRZ", "Levorg"],
+  };
+
+  useEffect(() => {
+    const fetchCarData = async () => {
+      const db = getFirestore();
+      try {
+        const carDoc = await getDoc(doc(db, "cars", carId));
+
+        if (carDoc.exists()) {
+          const carData = carDoc.data();
+
+          setCarInfo(carData);
+          setSelectedStartYear(carData.year);
+          setSelectedBrand(carData.brand);
+          setModels(brandAndModels[carData.brand] || []);
+          setSelectedFeatures(carData.features || []);
+          setFiles(carData.photos || []);
+        } else {
+          console.error("No car found with this ID.");
+          navigate("/catalog");
+        }
+      } catch (error) {
+        console.error("Error fetching car data:", error);
+        navigate("/catalog");
+      }
+    };
+
+    fetchCarData();
+  }, [carId, navigate]);
+
+  const handleStartYearChange = (event) => {
+    const selectedYear = parseInt(event.target.value, 10);
+    setSelectedStartYear(selectedYear);
+    const filteredEndYears = years.filter((year) => year >= selectedYear);
+    setEndYearOptions(filteredEndYears);
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setCarInfo({
+      ...carInfo,
+      [name]: value,
+    });
+  };
+
+  const handleCheckboxChange = (feature) => {
+    setSelectedFeatures((prevSelectedFeatures) =>
+      prevSelectedFeatures.includes(feature)
+        ? prevSelectedFeatures.filter((item) => item !== feature)
+        : [...prevSelectedFeatures, feature]
+    );
+  };
+
+  const handleBrandChange = (event) => {
+    const brand = event.target.value;
+    setSelectedBrand(brand);
+    setModels(brandAndModels[brand] || []);
+    setCarInfo((prevInfo) => ({
+      ...prevInfo,
+      brand,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const requiredFields = [
+      "brand",
+      "model",
+      "gearbox",
+      "color",
+      "fuelType",
+      "power",
+      "displacement",
+      "odometer",
+    ];
+
+    const missingFields = requiredFields.filter((field) => !carInfo[field]);
+
+    if (!selectedStartYear) {
+      missingFields.push("year");
+    }
+
+    if (missingFields.length > 0) {
+      setError(`Please fill in all required fields: ${missingFields.join(", ")}`);
+      setTimeout(() => setError(null), 5000);
+      return;
+    }
+
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (!user) {
+      console.error("No user is currently authenticated.");
+      return;
+    }
+
+    const storage = getStorage();
+
+    try {
+      setLoading(true);
+
+      const existingPhotos = files.filter((file) => typeof file === "string");
+      const newFiles = files.filter((file) => typeof file !== "string");
+
+      const fileUploadPromises = newFiles.map(async (file) => {
+        const fileRef = ref(storage, `cars/${file.name}`);
+        await uploadBytes(fileRef, file);
+        return await getDownloadURL(fileRef);
+      });
+
+      const uploadedPhotoURLs = await Promise.all(fileUploadPromises);
+
+      const allPhotos = [...existingPhotos, ...uploadedPhotoURLs];
+
+      const updatedCar = {
+        ...carInfo,
+        year: selectedStartYear,
+        features: selectedFeatures,
+        photos: allPhotos, 
+        owner: user.email,
+      };
+
+      const db = getFirestore();
+      const carDocRef = doc(db, "cars", carId);
+
+      await updateDoc(carDocRef, updatedCar);
+      setLoading(false);
+      navigate("/catalog");
+    } catch (error) {
+      setError("Error updating data, please try again later.");
+      setTimeout(() => {
+        setError(null);
+      }, 5000);
+      setLoading(false);
+    }
   };
 
   const colors = [
@@ -154,105 +261,27 @@ function CarForm() {
     "Tuning",
   ];
 
-  const handleCheckboxChange = (feature) => {
-    setSelectedFeatures((prevSelectedFeatures) =>
-      prevSelectedFeatures.includes(feature)
-        ? prevSelectedFeatures.filter((item) => item !== feature)
-        : [...prevSelectedFeatures, feature]
-    );
-  };
-
-  const handleBrandChange = (event) => {
-    const brand = event.target.value;
-    setSelectedBrand(brand);
-    setModels(brandAndModels[brand] || []);
-    setCarInfo((prevInfo) => ({
-      ...prevInfo,
-      brand: brand,
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-    const requiredFields = [
-      "brand",
-      "model",
-      "gearbox",
-      "price",
-      "color",
-      "fuelType",
-      "power",
-      "displacement",
-      "odometer",
-      "phone",
-    ];
-
-    const missingFields = requiredFields.filter((field) => !carInfo[field]);
-
-    if (!selectedStartYear) {
-      missingFields.push("year");
-    }
-
-    const phoneRegex = /^(088|089|087)\d{7}$/;
-    if (!phoneRegex.test(carInfo.phone)) {
-      setError("Invalid phone number format. Please enter a valid phone number.");
-      setTimeout(() => setError(null), 5000);
-      return;
-    }
-
-    if (missingFields.length > 0) {
-      setError(`Please fill in all required fields: ${missingFields.join(", ")}`);
-      setTimeout(() => setError(null), 5000);
-      return;
-    }
-
-    const auth = getAuth();
-    const user = auth.currentUser;
-
-    if (!user) {
-      console.error("No user is currently authenticated.");
-      return;
-    }
-
-    const storage = getStorage();
-
-    try {
-      const fileUploadPromises = files.map(async (file) => {
-        const fileRef = ref(storage, `cars/${file.name}`);
-        await uploadBytes(fileRef, file);
-        return await getDownloadURL(fileRef);
-      });
-      const photoURLs = await Promise.all(fileUploadPromises);
-
-      const newCar = {
-        ...carInfo,
-        year: selectedStartYear,
-        features: selectedFeatures,
-        photos: photoURLs,
-        owner: user.email,
-        views: 0,
-      };
-
-      const db = getFirestore();
-      const carsCollectionRef = collection(db, "cars");
-
-      await addDoc(carsCollectionRef, newCar);
-      setLoading(false);
-      navigate("/catalog");
-    } catch (error) {
-      setError("Error uploading data, please try again later.");
-      setTimeout(() => {
-        setError(null);
-      }, 5000);
-    }
+  const handleRemoveImage = (index) => {
+    setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
 
   return (
     <div className="relative p-4 bg-white">
       {error && (
         <div role="alert" className="alert alert-error absolute top-0 right-0 mt-2 mr-2 w-80">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-12 w-12 shrink-0 stroke-current"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
           <span>{error}</span>
         </div>
       )}
@@ -264,7 +293,7 @@ function CarForm() {
       )}
 
       <div className="flex flex-col gap-4 justify-center">
-        <h1 className="text-2xl font-bold text-start text-black">Add a new car</h1>
+        <h1 className="text-2xl font-bold text-start text-black">Edit car information</h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3 w-full">
           <span className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             <select
@@ -273,7 +302,7 @@ function CarForm() {
               value={selectedBrand}
               name="brand"
             >
-              <option disabled selected value="">
+              <option disabled value="">
                 Brand
               </option>
               {Object.keys(brandAndModels).map((brand) => (
@@ -288,8 +317,9 @@ function CarForm() {
               disabled={!models.length}
               name="model"
               onChange={handleChange}
+              value={carInfo.model}
             >
-              <option disabled selected value="">
+              <option disabled value="">
                 Model
               </option>
               {models.map((model) => (
@@ -305,7 +335,7 @@ function CarForm() {
               value={selectedStartYear}
               name="year"
             >
-              <option disabled selected value="">
+              <option disabled value="">
                 Year
               </option>
               {years.map((year) => (
@@ -319,10 +349,9 @@ function CarForm() {
               className="select select-bordered w-full bg-car-400 text-black"
               name="gearbox"
               onChange={handleChange}
+              value={carInfo.gearbox}
             >
-              <option disabled selected>
-                Gearbox
-              </option>
+              <option disabled>Gearbox</option>
               <option value="automatic" key="automatic">
                 Automatic
               </option>
@@ -334,10 +363,9 @@ function CarForm() {
               className="select select-bordered w-full bg-car-400 text-black"
               name="color"
               onChange={handleChange}
+              value={carInfo.color}
             >
-              <option disabled selected>
-                Color
-              </option>
+              <option disabled>Color</option>
               {colors.map((color) => (
                 <option key={color} value={color}>
                   {color}
@@ -349,10 +377,9 @@ function CarForm() {
               className="select select-bordered w-full bg-car-400 text-black"
               name="fuelType"
               onChange={handleChange}
+              value={carInfo.fuelType}
             >
-              <option disabled selected>
-                Fuel Type
-              </option>
+              <option disabled>Fuel Type</option>
               {fuelTypes.map((fuel) => (
                 <option key={fuel} value={fuel}>
                   {fuel}
@@ -366,16 +393,16 @@ function CarForm() {
               className="input w-full bg-car-400 placeholder-black font-light text-black"
               min="0"
               name="power"
-              value={carInfo.power === 0 ? "" : carInfo.power}
+              value={carInfo.power || ""}
               onChange={handleChange}
             />
             <input
               type="number"
               placeholder="Price ($)"
               className="input w-full bg-car-400 placeholder-black font-light text-black"
-              min={0}
+              min="0"
               name="price"
-              value={carInfo.price === 0 ? "" : carInfo.price}
+              value={carInfo.price || ""}
               onChange={handleChange}
             />
             <input
@@ -384,7 +411,7 @@ function CarForm() {
               className="input w-full bg-car-400 placeholder-black font-light text-black"
               min="0"
               name="displacement"
-              value={carInfo.displacement === 0 ? "" : carInfo.displacement}
+              value={carInfo.displacement || ""}
               onChange={handleChange}
             />
 
@@ -394,18 +421,8 @@ function CarForm() {
               className="input w-full bg-car-400 placeholder-black font-light text-black"
               min="0"
               name="odometer"
-              value={carInfo.odometer === 0 ? "" : carInfo.odometer}
+              value={carInfo.odometer || ""}
               onChange={handleChange}
-            />
-
-            <input
-              type="number"
-              placeholder="Phone Number"
-              className="input w-full bg-car-400 placeholder-black font-light text-black"
-              name="phone"
-              value={carInfo.phone}
-              onChange={handleChange}
-              required
             />
           </span>
 
@@ -423,14 +440,32 @@ function CarForm() {
               </label>
             ))}
           </div>
-
+          <h2 className="text-lg font-semibold">Existing Photos</h2>
+          <div className="flex flex-wrap gap-2">
+            {files.map((file, index) => (
+              <div key={index} className="relative">
+                <img
+                  src={typeof file === "string" ? file : URL.createObjectURL(file)}
+                  alt={`Car ${index + 1}`}
+                  className="w-32 h-32 object-cover rounded-md"
+                />
+                <button
+                  type="button"
+                  className="absolute top-0 right-0 bg-red-500 text-white p-0.5 m-0.5 rounded-full"
+                  onClick={() => handleRemoveImage(index)}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            ))}
+          </div>
           {/* <Dropzone
             onDrop={(acceptedFiles) => setFiles((prevFiles) => [...prevFiles, ...acceptedFiles])}
           /> */}
           <div className="flex justify-end mt-4">
             <input
               type="submit"
-              value="Add"
+              value="Edit"
               className="bg-car-500 text-white p-2 rounded-md hover:cursor-pointer px-12"
             />
           </div>
@@ -440,4 +475,4 @@ function CarForm() {
   );
 }
 
-export default CarForm;
+export default EditForm;
