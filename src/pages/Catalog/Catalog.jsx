@@ -8,8 +8,13 @@ export default function Catalog() {
     brand: "",
     model: "",
     features: [],
-    minPrice: '',
-    maxPrice: '',
+    minPrice: "",
+    maxPrice: "",
+    year: "",
+    fuelType: "",
+    gearbox: "",
+    color: "",
+    location: "",
   });
   const [isModalOpen, setModalOpen] = useState(false);
   const [isPriceDropdownOpen, setPriceDropdownOpen] = useState(false);
@@ -17,26 +22,21 @@ export default function Catalog() {
   const priceDropdownRef = useRef(null);
   const priceButtonRef = useRef(null);
 
-
   useEffect(() => {
     const fetchCars = async () => {
       try {
         const db = getFirestore();
         const carsCollectionRef = collection(db, "cars");
-
         const querySnapshot = await getDocs(carsCollectionRef);
         const carsList = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
-
         setCars(carsList);
-
       } catch (error) {
         console.error("Error fetching cars data:", error);
       }
     };
-
     fetchCars();
   }, []);
 
@@ -53,31 +53,44 @@ export default function Catalog() {
     };
 
     if (isPriceDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
-
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isPriceDropdownOpen]);
-
 
   const filteredCars = cars.filter((car) => {
     const matchesBrand = filters.brand ? car.brand === filters.brand : true;
     const matchesModel = filters.model ? car.model === filters.model : true;
     const matchesFeatures = filters.features.length
-      ? filters.features.every((feature) => car.features.includes(feature))
+      ? filters.features.every((feature) => car.features?.includes(feature))
       : true;
-
-    const carPrice = typeof car.price === 'number' ? car.price : parseFloat(car.price);
-
-    const minPriceFilter = filters.minPrice === '' ? null : parseFloat(filters.minPrice);
-    const maxPriceFilter = filters.maxPrice === '' ? null : parseFloat(filters.maxPrice);
-
+    const carPrice = typeof car.price === "number" ? car.price : parseFloat(car.price);
+    const minPriceFilter = filters.minPrice === "" ? null : parseFloat(filters.minPrice);
+    const maxPriceFilter = filters.maxPrice === "" ? null : parseFloat(filters.maxPrice);
     const matchesMinPrice = minPriceFilter === null || (!isNaN(minPriceFilter) && carPrice >= minPriceFilter);
     const matchesMaxPrice = maxPriceFilter === null || (!isNaN(maxPriceFilter) && carPrice <= maxPriceFilter);
+    const matchesYear = filters.year ? String(car.year) === String(filters.year) : true;
+    const matchesFuelType = filters.fuelType ? car.fuelType === filters.fuelType : true;
+    const matchesGearbox = filters.gearbox ? car.gearbox === filters.gearbox : true;
+    const matchesColor = filters.color ? car.color === filters.color : true;
+    const matchesLocation = filters.location
+      ? car.location?.toLowerCase().includes(filters.location.toLowerCase())
+      : true;
 
-    return matchesBrand && matchesModel && matchesFeatures && matchesMinPrice && matchesMaxPrice;
+    return (
+      matchesBrand &&
+      matchesModel &&
+      matchesFeatures &&
+      matchesMinPrice &&
+      matchesMaxPrice &&
+      matchesYear &&
+      matchesFuelType &&
+      matchesGearbox &&
+      matchesColor &&
+      matchesLocation
+    );
   });
 
   const handleBrandChange = (event) => {
@@ -105,31 +118,47 @@ export default function Catalog() {
   };
 
   const handleMinPriceChange = (event) => {
-      const value = event.target.value;
-      const numberValue = parseInt(value, 10);
-
-      const nonNegativeValue = value === '' ? '' : (isNaN(numberValue) ? value : Math.max(0, numberValue));
-
-      setFilters(prevFilters => ({
-         ...prevFilters,
-         minPrice: nonNegativeValue,
-      }));
+    const value = event.target.value;
+    const numberValue = parseInt(value, 10);
+    const nonNegativeValue = value === "" ? "" : isNaN(numberValue) ? value : Math.max(0, numberValue);
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      minPrice: nonNegativeValue,
+    }));
   };
 
   const handleMaxPriceChange = (event) => {
-       const value = event.target.value;
-       const numberValue = parseInt(value, 10);
+    const value = event.target.value;
+    const numberValue = parseInt(value, 10);
+    const nonNegativeValue = value === "" ? "" : isNaN(numberValue) ? value : Math.max(0, numberValue);
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      maxPrice: nonNegativeValue,
+    }));
+  };
 
-       const nonNegativeValue = value === '' ? '' : (isNaN(numberValue) ? value : Math.max(0, numberValue));
+  const handleYearChange = (event) => {
+    setFilters({ ...filters, year: event.target.value });
+  };
 
-       setFilters(prevFilters => ({
-          ...prevFilters,
-          maxPrice: nonNegativeValue,
-       }));
+  const handleFuelTypeChange = (event) => {
+    setFilters({ ...filters, fuelType: event.target.value });
+  };
+
+  const handleGearboxChange = (event) => {
+    setFilters({ ...filters, gearbox: event.target.value });
+  };
+
+  const handleColorChange = (event) => {
+    setFilters({ ...filters, color: event.target.value });
+  };
+
+  const handleLocationChange = (event) => {
+    setFilters({ ...filters, location: event.target.value });
   };
 
   const togglePriceDropdown = () => {
-      setPriceDropdownOpen(!isPriceDropdownOpen);
+    setPriceDropdownOpen(!isPriceDropdownOpen);
   };
 
   const carData = {
@@ -170,130 +199,205 @@ export default function Catalog() {
     "4x4 Drive", "Automatic Climate Control", "Tuning",
   ];
 
+  const years = [];
+  for (let year = 1920; year <= 2025; year++) years.push(year);
+
+  const fuelTypes = ["Petrol", "Diesel", "Electric", "Hybrid"];
+  const gearboxes = ["Automatic", "Manual"];
+  const colors = [
+    "Red", "Green", "Blue", "Yellow", "Purple", "Orange", "Pink", "Brown", "Black", "White", "Silver Gray",
+  ];
+
   const openModal = () => setModalOpen(true);
   const closeModal = () => setModalOpen(false);
 
   return (
-    <div className="p-8 w-full bg-[#222222]">
-      <div className="flex flex-wrap gap-4 my-3 items-center">
-        <select
-          onChange={handleBrandChange}
-          value={filters.brand}
-          className="select select-bordered min-w-[150px] max-w-[200px]"
-        >
-          <option value="">All Brands</option>
-          {Object.keys(carData).map((brand) => (
-            <option key={brand} value={brand}>
-              {brand}
-            </option>
-          ))}
-        </select>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 py-8 px-2">
+      <div className="max-w-7xl mx-auto">
+        {/* Filters */}
+        <div className="bg-white rounded-xl shadow-lg p-4 mb-8 flex flex-wrap gap-4 items-center justify-between">
+          <div className="flex flex-wrap gap-4 items-center w-full">
+            <select
+              onChange={handleBrandChange}
+              value={filters.brand}
+              className="select select-bordered min-w-[120px] max-w-[180px] bg-blue-50"
+            >
+              <option value="">All Brands</option>
+              {Object.keys(carData).map((brand) => (
+                <option key={brand} value={brand}>
+                  {brand}
+                </option>
+              ))}
+            </select>
 
-        <select
-          onChange={handleModelChange}
-          value={filters.model}
-          disabled={!filters.brand}
-          className="select select-bordered min-w-[150px] max-w-[200px]"
-        >
-          <option value="">All Models</option>
-          {(carData[filters.brand] || []).map((model) => (
-            <option key={model} value={model}>
-              {model}
-            </option>
-          ))}
-        </select>
+            <select
+              onChange={handleModelChange}
+              value={filters.model}
+              disabled={!filters.brand}
+              className="select select-bordered min-w-[120px] max-w-[180px] bg-blue-50"
+            >
+              <option value="">All Models</option>
+              {(carData[filters.brand] || []).map((model) => (
+                <option key={model} value={model}>
+                  {model}
+                </option>
+              ))}
+            </select>
 
-        <button
-            className="btn bg-[#168f7a] text-white w-40"
-            onClick={openModal}
-        >
-          Select Features
-        </button>
+            <select
+              onChange={handleYearChange}
+              value={filters.year}
+              className="select select-bordered min-w-[100px] max-w-[120px] bg-blue-50"
+            >
+              <option value="">Year</option>
+              {years.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
 
-        <div className="relative w-40">
-             <button
+            <select
+              onChange={handleFuelTypeChange}
+              value={filters.fuelType}
+              className="select select-bordered min-w-[120px] max-w-[150px] bg-blue-50"
+            >
+              <option value="">Fuel</option>
+              {fuelTypes.map((fuel) => (
+                <option key={fuel} value={fuel}>
+                  {fuel}
+                </option>
+              ))}
+            </select>
+
+            <select
+              onChange={handleGearboxChange}
+              value={filters.gearbox}
+              className="select select-bordered min-w-[120px] max-w-[150px] bg-blue-50"
+            >
+              <option value="">Gearbox</option>
+              {gearboxes.map((gear) => (
+                <option key={gear} value={gear}>
+                  {gear}
+                </option>
+              ))}
+            </select>
+
+            <select
+              onChange={handleColorChange}
+              value={filters.color}
+              className="select select-bordered min-w-[120px] max-w-[150px] bg-blue-50"
+            >
+              <option value="">Color</option>
+              {colors.map((color) => (
+                <option key={color} value={color}>
+                  {color}
+                </option>
+              ))}
+            </select>
+
+            <input
+              type="text"
+              placeholder="Location"
+              value={filters.location}
+              onChange={handleLocationChange}
+              className="input input-bordered min-w-[120px] max-w-[150px] bg-blue-50"
+            />
+
+            <button
+              className="btn bg-[#168f7a] text-white min-w-[120px] max-w-[150px]"
+              onClick={openModal}
+              type="button"
+            >
+              Features
+            </button>
+
+            <div className="relative min-w-[120px] max-w-[150px]">
+              <button
                 ref={priceButtonRef}
                 className="btn bg-gray-700 text-white w-full"
                 onClick={togglePriceDropdown}
-             >
-                Search by Price
-             </button>
-
-             {isPriceDropdownOpen && (
-                 <div
-                     ref={priceDropdownRef}
-                     className="absolute top-full left-0 mt-2 p-4 bg-gray-800 rounded-md shadow-lg z-20 flex flex-col gap-2 min-w-[200px]"
-                     onClick={(e) => e.stopPropagation()}
-                 >
-                     <label className="text-sm text-gray-300">Lowest End:</label>
-                     <input
-                        type="number"
-                        placeholder="Min"
-                        value={filters.minPrice}
-                        onChange={handleMinPriceChange}
-                        min="0"
-                        className="input input-bordered w-full input-sm"
-                     />
-
-                    <label className="text-sm text-gray-300">Highest End:</label>
-                     <input
-                        type="number"
-                        placeholder="Max"
-                        value={filters.maxPrice}
-                        onChange={handleMaxPriceChange}
-                        min="0"
-                        className="input input-bordered w-full input-sm"
-                     />
-                 </div>
-             )}
-        </div>
-
-      </div>
-
-      {isModalOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
-          onClick={closeModal}
-        >
-          <div
-            className="bg-white p-6 rounded-lg shadow-lg relative w-4/5 h-2/3 flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <span className="flex justify-between mb-4 items-center flex-shrink-0">
-              <h2 className="text-xl font-bold text-slate-600">Select Features</h2>
-              <button
-                className="p-2 bg-[#168f7a] text-white px-4 py-1 rounded-md"
-                onClick={closeModal}
+                type="button"
               >
-                Close
+                Price
               </button>
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto flex-grow">
-              {featuresList.map((feature) => (
-                <label key={feature} className="flex items-center text-gray-700">
+              {isPriceDropdownOpen && (
+                <div
+                  ref={priceDropdownRef}
+                  className="absolute top-full left-0 mt-2 p-4 bg-gray-800 rounded-md shadow-lg z-20 flex flex-col gap-2 min-w-[180px]"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <label className="text-sm text-gray-300">Min:</label>
                   <input
-                    type="checkbox"
-                    checked={filters.features.includes(feature)}
-                    onChange={() => handleFeatureChange(feature)}
-                    className="checkbox checkbox-primary"
+                    type="number"
+                    placeholder="Min"
+                    value={filters.minPrice}
+                    onChange={handleMinPriceChange}
+                    min="0"
+                    className="input input-bordered w-full input-sm"
                   />
-                  <span className="ml-2">{feature}</span>
-                </label>
-              ))}
+                  <label className="text-sm text-gray-300">Max:</label>
+                  <input
+                    type="number"
+                    placeholder="Max"
+                    value={filters.maxPrice}
+                    onChange={handleMaxPriceChange}
+                    min="0"
+                    className="input input-bordered w-full input-sm"
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
-      )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {filteredCars.map((car) => (
-          <CarBox key={car.id} car={car} />
-        ))}
-         {filteredCars.length === 0 && (
-            <div className="col-span-full text-center text-white text-xl">
-                No cars match your filters.
+        {/* Features Modal */}
+        {isModalOpen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+            onClick={closeModal}
+          >
+            <div
+              className="bg-white p-6 rounded-lg shadow-lg relative w-11/12 max-w-3xl h-2/3 flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <span className="flex justify-between mb-4 items-center flex-shrink-0">
+                <h2 className="text-xl font-bold text-slate-600">Select Features</h2>
+                <button
+                  className="p-2 bg-[#168f7a] text-white px-4 py-1 rounded-md"
+                  onClick={closeModal}
+                >
+                  Close
+                </button>
+              </span>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 overflow-y-auto flex-grow">
+                {featuresList.map((feature) => (
+                  <label key={feature} className="flex items-center text-gray-700">
+                    <input
+                      type="checkbox"
+                      checked={filters.features.includes(feature)}
+                      onChange={() => handleFeatureChange(feature)}
+                      className="checkbox checkbox-primary"
+                    />
+                    <span className="ml-2">{feature}</span>
+                  </label>
+                ))}
+              </div>
             </div>
+          </div>
         )}
+
+        {/* Cars Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          {filteredCars.map((car) => (
+            <CarBox key={car.id} car={car} />
+          ))}
+          {filteredCars.length === 0 && (
+            <div className="col-span-full text-center text-gray-600 text-xl py-12">
+              No cars match your filters.
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

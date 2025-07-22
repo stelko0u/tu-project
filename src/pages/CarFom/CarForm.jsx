@@ -26,6 +26,7 @@ function CarForm() {
     displacement: 0,
     odometer: 0,
     phone: "",
+    location: "",
     views: 0,
     likes: [],
   });
@@ -45,22 +46,12 @@ function CarForm() {
     setEndYearOptions(filteredEndYears);
   };
 
-  // const handleChange = (e) => {
-  //   const { name, value } = e.target;
-  //   setCarInfo({
-  //     ...carInfo,
-  //     [name]: value,
-  //   });
-  // };
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    // Check if the field is a number, and convert it if necessary
     const newValue =
       name === "price" || name === "power" || name === "displacement" || name === "odometer"
-        ? parseFloat(value) || 0 // Convert to number, default to 0 if NaN
+        ? parseFloat(value) || 0
         : value;
-
     setCarInfo({
       ...carInfo,
       [name]: newValue,
@@ -69,21 +60,7 @@ function CarForm() {
 
   const brandAndModels = {
     Audi: [
-      "80",
-      "90",
-      "100",
-      "А1",
-      "А2",
-      "A3",
-      "A4",
-      "A5",
-      "A6",
-      "A7",
-      "A8",
-      "Q3",
-      "Q5",
-      "Q7",
-      "Q8",
+      "80", "90", "100", "А1", "А2", "A3", "A4", "A5", "A6", "A7", "A8", "Q3", "Q5", "Q7", "Q8",
     ],
     BMW: ["X5", "320i", "M3", "M5", "X3", "X6", "X7", "X1", "X2", "X4"],
     Mercedes: ["C-Class", "E-Class", "GLA", "GLC", "GLE", "GLS", "S-Class"],
@@ -108,50 +85,18 @@ function CarForm() {
   };
 
   const colors = [
-    "Red",
-    "Green",
-    "Blue",
-    "Yellow",
-    "Purple",
-    "Orange",
-    "Pink",
-    "Brown",
-    "Black",
-    "White",
-    "Silver Gray",
+    "Red", "Green", "Blue", "Yellow", "Purple", "Orange", "Pink", "Brown", "Black", "White", "Silver Gray",
   ];
 
   const fuelTypes = ["Petrol", "Diesel", "Electric", "Hybrid"];
 
   const features = [
-    "Air Conditioning",
-    "Leather Seats",
-    "Navigation System",
-    "Bluetooth",
-    "Rear Camera",
-    "Cruise Control",
-    "Heated Seats",
-    "Panoramic Roof",
-    "Alarm System",
-    "Parking Sensors",
-    "Adaptive Headlights",
-    "Keyless Entry",
-    "Adaptive Cruise Control",
-    "Automatic Traffic Sign Recognition",
-    "LED Lights",
-    "Blind Spot Monitoring System",
-    "Automatic Transmission",
-    "Electric Seats",
-    "Traction Control",
-    "Stability Control (ESP)",
-    "Electric Windows",
-    "Electric Mirrors",
-    "On-board Computer",
-    "Sunroof",
-    "Multifunction Steering Wheel",
-    "4x4 Drive",
-    "Automatic Climate Control",
-    "Tuning",
+    "Air Conditioning", "Leather Seats", "Navigation System", "Bluetooth", "Rear Camera", "Cruise Control",
+    "Heated Seats", "Panoramic Roof", "Alarm System", "Parking Sensors", "Adaptive Headlights", "Keyless Entry",
+    "Adaptive Cruise Control", "Automatic Traffic Sign Recognition", "LED Lights", "Blind Spot Monitoring System",
+    "Automatic Transmission", "Electric Seats", "Traction Control", "Stability Control (ESP)", "Electric Windows",
+    "Electric Mirrors", "On-board Computer", "Sunroof", "Multifunction Steering Wheel", "4x4 Drive",
+    "Automatic Climate Control", "Tuning",
   ];
 
   const handleCheckboxChange = (feature) => {
@@ -177,16 +122,7 @@ function CarForm() {
     setLoading(true);
 
     const requiredFields = [
-      "brand",
-      "model",
-      "gearbox",
-      "price",
-      "color",
-      "fuelType",
-      "power",
-      "displacement",
-      "odometer",
-      "phone",
+      "brand", "model", "gearbox", "price", "color", "fuelType", "power", "displacement", "odometer", "phone", "location",
     ];
 
     const missingFields = requiredFields.filter((field) => !carInfo[field]);
@@ -199,12 +135,14 @@ function CarForm() {
     if (!phoneRegex.test(carInfo.phone)) {
       setError("Invalid phone number format. Please enter a valid phone number.");
       setTimeout(() => setError(null), 5000);
+      setLoading(false);
       return;
     }
 
     if (missingFields.length > 0) {
       setError(`Please fill in all required fields: ${missingFields.join(", ")}`);
       setTimeout(() => setError(null), 5000);
+      setLoading(false);
       return;
     }
 
@@ -213,6 +151,7 @@ function CarForm() {
 
     if (!user) {
       console.error("No user is currently authenticated.");
+      setLoading(false);
       return;
     }
 
@@ -246,34 +185,36 @@ function CarForm() {
       setTimeout(() => {
         setError(null);
       }, 5000);
+      setLoading(false);
     }
   };
 
   return (
-    <div className="relative p-4 bg-white">
-      {error && (
-        <div role="alert" className="alert alert-error absolute top-0 right-0 mt-2 mr-2 w-80">
-          <span>{error}</span>
-        </div>
-      )}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 flex items-center justify-center py-10 px-4">
+      <div className="max-w-4xl w-full bg-white rounded-2xl shadow-2xl p-8 relative">
+        {error && (
+          <div role="alert" className="absolute top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded shadow z-10">
+            <span>{error}</span>
+          </div>
+        )}
 
-      {loading && (
-        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
-          <span className="loading loading-dots loading-lg custom-spinner"></span>
-        </div>
-      )}
+        {loading && (
+          <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
+            <span className="loading loading-dots loading-lg custom-spinner"></span>
+          </div>
+        )}
 
-      <div className="flex flex-col gap-4 justify-center">
-        <h1 className="text-2xl font-bold text-start text-black">Add a new car</h1>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3 w-full">
-          <span className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <h1 className="text-3xl font-bold text-blue-700 mb-6 text-center">Add a New Car</h1>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <select
-              className="select select-bordered w-full bg-car-400 text-black"
+              className="select select-bordered w-full bg-blue-50 text-black"
               onChange={handleBrandChange}
               value={selectedBrand}
               name="brand"
+              required
             >
-              <option disabled selected value="">
+              <option disabled value="">
                 Brand
               </option>
               {Object.keys(brandAndModels).map((brand) => (
@@ -284,12 +225,14 @@ function CarForm() {
             </select>
 
             <select
-              className="select select-bordered w-full bg-car-400 text-black"
+              className="select select-bordered w-full bg-blue-50 text-black"
               disabled={!models.length}
               name="model"
               onChange={handleChange}
+              value={carInfo.model}
+              required
             >
-              <option disabled selected value="">
+              <option disabled value="">
                 Model
               </option>
               {models.map((model) => (
@@ -300,12 +243,13 @@ function CarForm() {
             </select>
 
             <select
-              className="select select-bordered w-full bg-car-400 text-black"
+              className="select select-bordered w-full bg-blue-50 text-black"
               onChange={handleStartYearChange}
               value={selectedStartYear}
               name="year"
+              required
             >
-              <option disabled selected value="">
+              <option disabled value="">
                 Year
               </option>
               {years.map((year) => (
@@ -316,26 +260,27 @@ function CarForm() {
             </select>
 
             <select
-              className="select select-bordered w-full bg-car-400 text-black"
+              className="select select-bordered w-full bg-blue-50 text-black"
               name="gearbox"
               onChange={handleChange}
+              value={carInfo.gearbox}
+              required
             >
-              <option disabled selected>
+              <option disabled value="">
                 Gearbox
               </option>
-              <option value="automatic" key="automatic">
-                Automatic
-              </option>
-              <option value="manual" key="manual">
-                Manual
-              </option>
+              <option value="automatic">Automatic</option>
+              <option value="manual">Manual</option>
             </select>
+
             <select
-              className="select select-bordered w-full bg-car-400 text-black"
+              className="select select-bordered w-full bg-blue-50 text-black"
               name="color"
               onChange={handleChange}
+              value={carInfo.color}
+              required
             >
-              <option disabled selected>
+              <option disabled value="">
                 Color
               </option>
               {colors.map((color) => (
@@ -346,11 +291,13 @@ function CarForm() {
             </select>
 
             <select
-              className="select select-bordered w-full bg-car-400 text-black"
+              className="select select-bordered w-full bg-blue-50 text-black"
               name="fuelType"
               onChange={handleChange}
+              value={carInfo.fuelType}
+              required
             >
-              <option disabled selected>
+              <option disabled value="">
                 Fuel Type
               </option>
               {fuelTypes.map((fuel) => (
@@ -363,75 +310,95 @@ function CarForm() {
             <input
               type="number"
               placeholder="Power (HP)"
-              className="input w-full bg-car-400 placeholder-black font-light text-black"
+              className="input input-bordered w-full bg-blue-50 placeholder-black text-black"
               min="0"
               name="power"
               value={carInfo.power === 0 ? "" : carInfo.power}
               onChange={handleChange}
+              required
             />
             <input
               type="number"
               placeholder="Price ($)"
-              className="input w-full bg-car-400 placeholder-black font-light text-black"
+              className="input input-bordered w-full bg-blue-50 placeholder-black text-black"
               min={0}
               name="price"
               value={carInfo.price === 0 ? "" : carInfo.price}
               onChange={handleChange}
+              required
             />
             <input
               type="number"
               placeholder="Displacement (cc)"
-              className="input w-full bg-car-400 placeholder-black font-light text-black"
+              className="input input-bordered w-full bg-blue-50 placeholder-black text-black"
               min="0"
               name="displacement"
               value={carInfo.displacement === 0 ? "" : carInfo.displacement}
               onChange={handleChange}
+              required
             />
 
             <input
               type="number"
               placeholder="Odometer (km)"
-              className="input w-full bg-car-400 placeholder-black font-light text-black"
+              className="input input-bordered w-full bg-blue-50 placeholder-black text-black"
               min="0"
               name="odometer"
               value={carInfo.odometer === 0 ? "" : carInfo.odometer}
               onChange={handleChange}
+              required
+            />
+
+            <input
+              type="text"
+              placeholder="Location"
+              className="input input-bordered w-full bg-blue-50 placeholder-black text-black"
+              name="location"
+              value={carInfo.location}
+              onChange={handleChange}
+              required
             />
 
             <input
               type="number"
               placeholder="Phone Number"
-              className="input w-full bg-car-400 placeholder-black font-light text-black"
+              className="input input-bordered w-full bg-blue-50 placeholder-black text-black"
               name="phone"
               value={carInfo.phone}
               onChange={handleChange}
               required
             />
-          </span>
-
-          <h2>Select car features:</h2>
-          <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">
-            {features.map((feature) => (
-              <label key={feature} className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={selectedFeatures.includes(feature)}
-                  onChange={() => handleCheckboxChange(feature)}
-                  className="checkbox checkbox-primary"
-                />
-                <span>{feature}</span>
-              </label>
-            ))}
           </div>
 
-          <Dropzone
-            onDrop={(acceptedFiles) => setFiles((prevFiles) => [...prevFiles, ...acceptedFiles])}
-          />
+          <div>
+            <h2 className="text-lg font-semibold text-blue-700 mb-2">Select Car Features</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+              {features.map((feature) => (
+                <label key={feature} className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedFeatures.includes(feature)}
+                    onChange={() => handleCheckboxChange(feature)}
+                    className="checkbox checkbox-primary"
+                  />
+                  <span className="text-gray-700">{feature}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-lg font-semibold text-blue-700 mb-2">Upload Car Photos</h2>
+            <Dropzone
+              onDrop={(acceptedFiles) => setFiles((prevFiles) => [...prevFiles, ...acceptedFiles])}
+            />
+          </div>
+
           <div className="flex justify-end mt-4">
             <input
               type="submit"
-              value="Add"
-              className="bg-car-500 text-white p-2 rounded-md hover:cursor-pointer px-12"
+              value="Add Car"
+              className="bg-gradient-to-r from-blue-500 to-green-500 text-white font-bold py-3 px-12 rounded-lg shadow-lg hover:scale-105 transition-all cursor-pointer"
             />
           </div>
         </form>

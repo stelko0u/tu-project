@@ -333,15 +333,15 @@ const AdminPage = () => {
       <aside className="w-full lg:w-64 bg-[#19191F] text-white p-4 flex flex-col">
         <div className="mb-6 text-center">
           <h2 className="text-xl font-semibold">Admin Menu</h2>
-
-          <button
-            onClick={handleUsersClick}
-            className="block w-full text-left p-2 rounded hover:bg-gray-700"
-            disabled={loading}
-          >
-            List Users
-          </button>
         </div>
+
+        <button
+          onClick={handleUsersClick}
+          className="block w-full text-left p-2 rounded hover:bg-gray-700"
+          disabled={loading}
+        >
+          List Users
+        </button>
         <nav className="space-y-2 flex-grow">
           <button
             className={`block w-full text-left p-2 rounded ${

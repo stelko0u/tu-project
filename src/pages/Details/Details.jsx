@@ -8,6 +8,7 @@ import { Heart, HeartOff, PencilLine, Trash2 } from "lucide-react";
 import { AuthContext } from "../../Context/AuthContext";
 import { FaRegHeart, FaHeart } from "react-icons/fa";
 import Modal from "react-modal";
+import Chat from "../../components/Chat/ChatComponent.jsx";
 
 Modal.setAppElement("#root");
 
@@ -25,34 +26,23 @@ export default function Details() {
   const db = getFirestore();
   const auth = getAuth();
   const navigate = useNavigate();
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const handleLike = async () => {
     if (!isAuthenticated) return;
-
     const carRef = doc(db, "cars", carId);
     const carSnapshot = await getDoc(carRef);
-
     if (carSnapshot.exists()) {
       const carData = carSnapshot.data();
       const userId = auth.currentUser.uid;
-
       let updatedLikes = [...(carData.likes || [])];
-
       if (liked) {
         updatedLikes = updatedLikes.filter((id) => id !== userId);
       } else {
         updatedLikes.push(userId);
       }
-
-      await updateDoc(carRef, {
-        likes: updatedLikes,
-      });
-
-      setCar((prevCar) => ({
-        ...prevCar,
-        likes: updatedLikes,
-      }));
-
+      await updateDoc(carRef, { likes: updatedLikes });
+      setCar((prevCar) => ({ ...prevCar, likes: updatedLikes }));
       setLiked(!liked);
     }
   };
@@ -66,7 +56,6 @@ export default function Details() {
         if (carSnapshot.exists()) {
           const carData = carSnapshot.data();
           setCar(carData);
-
           if (user && user.currentUser.email === carData.owner) {
             setIsOwner(true);
           }
@@ -84,7 +73,6 @@ export default function Details() {
         setLoading(false);
       }
     };
-
     fetchCarDetails();
   }, [carId, db, auth]);
 
@@ -105,10 +93,7 @@ export default function Details() {
 
   const incrementViews = async (carId) => {
     const carRef = doc(db, "cars", carId);
-    await updateDoc(carRef, {
-      views: increment(1),
-    });
-
+    await updateDoc(carRef, { views: increment(1) });
     const updatedCarSnapshot = await getDoc(carRef);
     if (updatedCarSnapshot.exists()) {
       setCar(updatedCarSnapshot.data());
@@ -140,18 +125,27 @@ export default function Details() {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-opacity-50"></div>
+      </div>
+    );
   }
 
   if (!car) {
-    return <div>Car not found.</div>;
+    return (
+      <div className="flex items-center justify-center h-screen text-xl text-gray-500">
+        Car not found.
+      </div>
+    );
   }
 
   return (
-    <div className="p-4">
-      <div className="bg-white p-6">
-        <div className="flex flex-col gap-8 lg:gap-0 lg:flex-row justify-between">
-          <div className="max-w-2xl">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 py-10 px-4">
+      <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
+        <div className="flex flex-col lg:flex-row">
+          {/* Left: Gallery */}
+          <div className="lg:w-1/2 p-8 flex flex-col items-center">
             <Carousel
               showArrows={true}
               showThumbs={false}
@@ -160,15 +154,14 @@ export default function Details() {
               infiniteLoop={true}
               selectedItem={selectedIndex}
               onChange={(index) => setSelectedIndex(index)}
-              className="max-h-96"
+              className="w-full max-h-96 rounded-xl overflow-hidden shadow-lg"
             >
               {car.photos.map((photoUrl, index) => (
                 <div key={index} onClick={() => openModal(photoUrl, index)}>
                   <img
                     src={photoUrl}
                     alt={`Car photo ${index + 1}`}
-                    className="object-cover size-full h-96 cursor-pointer "
-                    onClick={() => openModal(photoUrl, index)}
+                    className="object-cover w-full h-80 cursor-pointer rounded-xl"
                   />
                 </div>
               ))}
@@ -179,60 +172,108 @@ export default function Details() {
                   key={index}
                   src={photoUrl}
                   alt={`Thumbnail ${index + 1}`}
-                  className={`w-16 h-16 object-cover cursor-pointer border-2 rounded-md ${
-                    selectedIndex === index ? "border-blue-500" : "border-gray-300"
+                  className={`w-16 h-16 object-cover cursor-pointer border-2 rounded-md transition-all duration-200 ${
+                    selectedIndex === index ? "border-blue-500 scale-105" : "border-gray-300"
                   }`}
                   onClick={() => setSelectedIndex(index)}
                 />
               ))}
             </div>
           </div>
-          <div className="lg:w-1/2 text-slate-600 flex justify-between">
-            <span>
-              <h1 className="text-2xl font-bold">
+          {/* Right: Info */}
+          <div className="lg:w-1/2 p-8 flex flex-col justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-blue-700 mb-2">
                 {car.brand} {car.model}
               </h1>
-              <p>Year: {car.year}</p>
-              <p>Power: {car.power} HP</p>
-              <p>Price: ${car.price}</p>
-              <p>Engine: {car.fuelType}</p>
-              <p>Gearbox: {car.gearbox}</p>
-              <p>Phone number: {car.phone}</p>
-              <p>Owner: {car.owner}</p>
-              <p>Views: {car.views}</p>
-            </span>
-            <span>
-              <span className="flex justify-center items-center gap-2">
+              <p className="text-lg text-gray-700 mb-4">{car.description}</p>
+              <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-slate-600 text-base">
+                <span>
+                  <span className="font-semibold">Year:</span> {car.year}
+                </span>
+                <span>
+                  <span className="font-semibold">Power:</span> {car.power} HP
+                </span>
+                <span>
+                  <span className="font-semibold">Engine:</span> {car.fuelType}
+                </span>
+                <span>
+                  <span className="font-semibold">Gearbox:</span> {car.gearbox}
+                </span>
+                <span>
+                  <span className="font-semibold">Owner:</span> {car.owner}
+                </span>
+                <span>
+                  <span className="font-semibold">Phone:</span> {car.phone}
+                </span>
+                <span>
+                  <span className="font-semibold">Views:</span> {car.views}
+                </span>
+                <span>
+                  <span className="font-semibold">Price:</span>{" "}
+                  <span className="text-xl font-bold text-green-600">${car.price}</span>
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center justify-between mt-8">
+              <div className="flex items-center gap-4">
                 {isAuthenticated && (
-                  <button onClick={handleLike} className="hover:scale-105 duration-300">
+                  <button
+                    onClick={handleLike}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-100 hover:bg-blue-200 transition-all"
+                  >
                     {liked ? (
-                      <span className="flex items-center gap-2">
-                        <p className="text-lg">{car.likes.length}</p>
-                        <FaHeart color="red" size={26} />
-                      </span>
+                      <>
+                        <FaHeart color="red" size={24} />
+                        <span className="font-semibold text-blue-700">{car.likes.length}</span>
+                      </>
                     ) : (
-                      <span className="flex items-center gap-2">
-                        <p className="text-lg">{car.likes.length}</p>
-                        <FaRegHeart color="red" size={26} />
-                      </span>
+                      <>
+                        <FaRegHeart color="red" size={24} />
+                        <span className="font-semibold text-blue-700">{car.likes.length}</span>
+                      </>
                     )}
                   </button>
                 )}
-                {isOwner && isAuthenticated && (
-                  <div className="flex gap-2">
-                    <button onClick={handleEdit}>
-                      <PencilLine color="orange" />
-                    </button>
-                    <button onClick={() => openDeleteModal(true)}>
-                      <Trash2 color="red" />
-                    </button>
-                  </div>
+                <span className="text-gray-400">|</span>
+                <span className="flex items-center gap-2 text-gray-500">
+                  <Heart className="w-5 h-5" />
+                  <span>{car.likes.length} Likes</span>
+                </span>
+              </div>
+              <div className="flex gap-2">
+                {!isOwner && isAuthenticated && (
+                  <button
+                    className="bg-blue-500 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-600 transition-all"
+                    onClick={() => setIsChatOpen(true)}
+                  >
+                    Contact Owner
+                  </button>
                 )}
-              </span>
-            </span>
+                {isOwner && isAuthenticated && (
+                  <>
+                    <button
+                      onClick={handleEdit}
+                      className="bg-orange-400 text-white px-4 py-2 rounded-lg shadow hover:bg-orange-500 transition-all flex items-center gap-2"
+                    >
+                      <PencilLine className="w-5 h-5" />
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => openDeleteModal(true)}
+                      className="bg-red-500 text-white px-4 py-2 rounded-lg shadow hover:bg-red-600 transition-all flex items-center gap-2"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                      Delete
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
+      {/* Delete Modal */}
       <Modal
         isOpen={isOpenDeleteModal}
         onRequestClose={closeDeleteModal}
@@ -241,34 +282,35 @@ export default function Details() {
         className="rounded-lg shadow-lg max-w-full z-20 relative flex justify-center items-center"
         overlayClassName="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex justify-center items-center z-10"
       >
-        <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-          <h2 className="text-xl font-semibold">Are you sure you want to delete this car?</h2>
-          <div className="mt-4 flex justify-between">
+        <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+          <h2 className="text-2xl font-semibold text-red-600 mb-4">Delete Car</h2>
+          <p className="mb-6 text-gray-700">Are you sure you want to delete this car?</p>
+          <div className="flex justify-end gap-4">
             <button
               onClick={closeDeleteModal}
-              className="bg-green-500 text-white p-2 rounded-md hover:cursor-pointer px-12"
+              className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition-all"
             >
-              No
+              Cancel
             </button>
             <button
-              onClick={() => handleDelete()}
-              className="bg-red-500 text-white p-2 rounded-md hover:cursor-pointer px-12"
+              onClick={handleDelete}
+              className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition-all"
             >
-              Yes
+              Delete
             </button>
           </div>
         </div>
       </Modal>
+      {/* Image Modal */}
       <Modal
         isOpen={isModalOpen}
         onRequestClose={closeModal}
         contentLabel="Car Image Modal"
         escapedClose={false}
-        
         className="rounded-lg shadow-lg max-w-full z-20 relative flex justify-center items-center"
         overlayClassName="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex justify-center items-center z-10"
       >
-        <div className="relative w-full max-w-4xl f">
+        <div className="relative w-full max-w-4xl">
           <Carousel
             selectedItem={selectedIndex}
             onChange={(index) => setSelectedIndex(index)}
@@ -279,17 +321,29 @@ export default function Details() {
             autoPlay={false}
           >
             {car.photos.map((photoUrl, index) => (
-              <div key={index} className="flex justify-center items-center h-screen">
+              <div key={index} className="flex justify-center items-center h-[70vh]">
                 <img
                   src={photoUrl}
                   alt={`Car photo ${index + 1}`}
-                  className="object-cover max-h-screen w-full"
+                  className="object-contain max-h-[65vh] w-full rounded-xl shadow-lg"
                 />
               </div>
             ))}
           </Carousel>
         </div>
       </Modal>
+      {/* Chat Modal */}
+      {isChatOpen && (
+        <Modal
+          isOpen={isChatOpen}
+          onRequestClose={() => setIsChatOpen(false)}
+          contentLabel="Chat Modal"
+          className="rounded-lg shadow-lg max-w-full z-20 relative flex justify-center items-center"
+          overlayClassName="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex justify-center items-center z-10"
+        >
+          <Chat owner={car.owner} onClose={() => setIsChatOpen(false)} />
+        </Modal>
+      )}
     </div>
   );
 }

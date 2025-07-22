@@ -23,64 +23,57 @@ const ResetPassword = () => {
       await sendPasswordResetEmail(auth, email);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 5000);
-      // alert("Password reset email sent! Check your inbox.");
       setError("");
     } catch (err) {
-      console.error("Error sending reset email:", err);
       setError(err.message);
     }
   };
 
   return (
     <div
-      className="flex justify-center items-center h-screen bg-cover bg-center"
-      style={{ backgroundImage: "url('/bg.jpg')" }}
+      className="flex justify-center items-center min-h-screen bg-cover bg-center px-2"
+      style={{
+        backgroundImage:
+          "url('/bg.jpg')",
+        // Or use Unsplash: "url('https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=1200&q=80')"
+      }}
     >
-      {success && (
-        <Alert
-          type="success"
-          message="Password reset email sent! Check your inbox."
-          className="absolute top-20 right-0 mt-2"
-        />
-      )}
-      {error && (
-        <Alert
-          type="error"
-          message={getUserFriendlyMessage(error)}
-          className="absolute top-20 right-0 mt-2"
-        />
-      )}
-
-      <div className="flex flex-col bg-primary p-5 text-white lg:w-1/4 rounded-md">
-        <h1 className="text-3xl font-bold text-center pb-4">Forgot Password</h1>
-
-        <form onSubmit={handleReset} className="flex flex-col gap-3 w-full">
-          {error && <p className="text-red-500 text-center font-bold h-4">{error}</p>}
-
+      <div className="w-full max-w-md bg-white bg-opacity-90 rounded-2xl shadow-2xl p-8 flex flex-col gap-6">
+        <h1 className="text-3xl font-bold text-blue-700 text-center mb-2">Forgot Password</h1>
+        <form onSubmit={handleReset} className="flex flex-col gap-4 w-full">
+          {success && (
+            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-2 rounded text-center font-semibold mb-2">
+              Password reset email sent! Check your inbox.
+            </div>
+          )}
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded text-center font-semibold mb-2">
+              {getUserFriendlyMessage(error)}
+            </div>
+          )}
           <div>
-            <label>Email address:</label>
+            <label className="block text-blue-700 font-semibold mb-1">Email address:</label>
             <input
-              className="p-2 text-xl text-black bg-white w-full"
+              className="input input-bordered w-full bg-blue-50 text-black"
               onChange={(e) => setEmail(e.target.value)}
               type="email"
               required
               value={email}
+              placeholder="Enter your email"
             />
           </div>
-
-          <p className="text-center text-l">
-            I remember my password{" "}
-            <Link to="/login" className="text-blue-500 font-bold">
-              Login
-            </Link>
-          </p>
-
           <input
-            className="p-2 text-xl bg-white text-black font-bold cursor-pointer hover:bg-slate-400 hover:text-white transition-all duration-500 rounded-sm"
+            className="bg-gradient-to-r from-blue-500 to-green-500 text-white font-bold py-2 rounded-lg shadow-lg cursor-pointer hover:scale-105 transition-all duration-300"
             type="submit"
             value="Send Reset Link"
           />
         </form>
+        <div className="text-center text-base mt-2 text-gray-500">
+          I remember my password{" "}
+          <Link to="/login" className="text-blue-600 font-bold hover:underline">
+            Login
+          </Link>
+        </div>
       </div>
     </div>
   );

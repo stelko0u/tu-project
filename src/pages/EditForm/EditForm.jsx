@@ -9,7 +9,6 @@ import { X } from "lucide-react";
 function EditForm() {
   const { id: carId } = useParams();
   const [selectedStartYear, setSelectedStartYear] = useState("");
-  const [endYearOptions, setEndYearOptions] = useState([]);
   const [selectedFeatures, setSelectedFeatures] = useState([]);
   const [selectedBrand, setSelectedBrand] = useState("");
   const [models, setModels] = useState([]);
@@ -20,12 +19,16 @@ function EditForm() {
     model: "",
     gearbox: "",
     color: "",
-    price: null,
+    price: 0,
     owner: "",
     fuelType: "",
-    power: null,
-    displacement: null,
-    odometer: null,
+    power: 0,
+    displacement: 0,
+    odometer: 0,
+    phone: "",
+    location: "",
+    views: 0,
+    likes: [],
   });
   const [error, setError] = useState(null);
 
@@ -40,21 +43,7 @@ function EditForm() {
 
   const brandAndModels = {
     Audi: [
-      "80",
-      "90",
-      "100",
-      "A1",
-      "A2",
-      "A3",
-      "A4",
-      "A5",
-      "A6",
-      "A7",
-      "A8",
-      "Q3",
-      "Q5",
-      "Q7",
-      "Q8",
+      "80", "90", "100", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "Q3", "Q5", "Q7", "Q8",
     ],
     BMW: ["X5", "320i", "M3", "M5", "X3", "X6", "X7", "X1", "X2", "X4"],
     Mercedes: ["C-Class", "E-Class", "GLA", "GLC", "GLE", "GLS", "S-Class"],
@@ -78,15 +67,28 @@ function EditForm() {
     Subaru: ["Impreza", "Forester", "Outback", "XV", "BRZ", "Levorg"],
   };
 
+  const colors = [
+    "Red", "Green", "Blue", "Yellow", "Purple", "Orange", "Pink", "Brown", "Black", "White", "Silver Gray",
+  ];
+
+  const fuelTypes = ["Petrol", "Diesel", "Electric", "Hybrid"];
+
+  const features = [
+    "Air Conditioning", "Leather Seats", "Navigation System", "Bluetooth", "Rear Camera", "Cruise Control",
+    "Heated Seats", "Panoramic Roof", "Alarm System", "Parking Sensors", "Adaptive Headlights", "Keyless Entry",
+    "Adaptive Cruise Control", "Automatic Traffic Sign Recognition", "LED Lights", "Blind Spot Monitoring System",
+    "Automatic Transmission", "Electric Seats", "Traction Control", "Stability Control (ESP)", "Electric Windows",
+    "Electric Mirrors", "On-board Computer", "Sunroof", "Multifunction Steering Wheel", "4x4 Drive",
+    "Automatic Climate Control", "Tuning",
+  ];
+
   useEffect(() => {
     const fetchCarData = async () => {
       const db = getFirestore();
       try {
         const carDoc = await getDoc(doc(db, "cars", carId));
-
         if (carDoc.exists()) {
           const carData = carDoc.data();
-
           setCarInfo(carData);
           setSelectedStartYear(carData.year);
           setSelectedBrand(carData.brand);
@@ -94,30 +96,29 @@ function EditForm() {
           setSelectedFeatures(carData.features || []);
           setFiles(carData.photos || []);
         } else {
-          console.error("No car found with this ID.");
           navigate("/catalog");
         }
       } catch (error) {
-        console.error("Error fetching car data:", error);
         navigate("/catalog");
       }
     };
-
     fetchCarData();
   }, [carId, navigate]);
 
   const handleStartYearChange = (event) => {
     const selectedYear = parseInt(event.target.value, 10);
     setSelectedStartYear(selectedYear);
-    const filteredEndYears = years.filter((year) => year >= selectedYear);
-    setEndYearOptions(filteredEndYears);
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    const newValue =
+      name === "price" || name === "power" || name === "displacement" || name === "odometer"
+        ? parseFloat(value) || 0
+        : value;
     setCarInfo({
       ...carInfo,
-      [name]: value,
+      [name]: newValue,
     });
   };
 
@@ -135,49 +136,52 @@ function EditForm() {
     setModels(brandAndModels[brand] || []);
     setCarInfo((prevInfo) => ({
       ...prevInfo,
-      brand,
+      brand: brand,
     }));
+  };
+
+  const handleRemoveImage = (index) => {
+    setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     const requiredFields = [
-      "brand",
-      "model",
-      "gearbox",
-      "color",
-      "fuelType",
-      "power",
-      "displacement",
-      "odometer",
+      "brand", "model", "gearbox", "price", "color", "fuelType", "power", "displacement", "odometer", "phone", "location",
     ];
 
     const missingFields = requiredFields.filter((field) => !carInfo[field]);
-
     if (!selectedStartYear) {
       missingFields.push("year");
+    }
+
+    const phoneRegex = /^(088|089|087)\d{7}$/;
+    if (!phoneRegex.test(carInfo.phone)) {
+      setError("Invalid phone number format. Please enter a valid phone number.");
+      setTimeout(() => setError(null), 5000);
+      setLoading(false);
+      return;
     }
 
     if (missingFields.length > 0) {
       setError(`Please fill in all required fields: ${missingFields.join(", ")}`);
       setTimeout(() => setError(null), 5000);
+      setLoading(false);
       return;
     }
 
     const auth = getAuth();
     const user = auth.currentUser;
-
     if (!user) {
-      console.error("No user is currently authenticated.");
+      setLoading(false);
       return;
     }
 
     const storage = getStorage();
 
     try {
-      setLoading(true);
-
       const existingPhotos = files.filter((file) => typeof file === "string");
       const newFiles = files.filter((file) => typeof file !== "string");
 
@@ -188,14 +192,13 @@ function EditForm() {
       });
 
       const uploadedPhotoURLs = await Promise.all(fileUploadPromises);
-
       const allPhotos = [...existingPhotos, ...uploadedPhotoURLs];
 
       const updatedCar = {
         ...carInfo,
         year: selectedStartYear,
         features: selectedFeatures,
-        photos: allPhotos, 
+        photos: allPhotos,
         owner: user.email,
       };
 
@@ -207,100 +210,35 @@ function EditForm() {
       navigate("/catalog");
     } catch (error) {
       setError("Error updating data, please try again later.");
-      setTimeout(() => {
-        setError(null);
-      }, 5000);
+      setTimeout(() => setError(null), 5000);
       setLoading(false);
     }
   };
 
-  const colors = [
-    "Red",
-    "Green",
-    "Blue",
-    "Yellow",
-    "Purple",
-    "Orange",
-    "Pink",
-    "Brown",
-    "Black",
-    "White",
-    "Silver Gray",
-  ];
-
-  const fuelTypes = ["Petrol", "Diesel", "Electric", "Hybrid"];
-
-  const features = [
-    "Air Conditioning",
-    "Leather Seats",
-    "Navigation System",
-    "Bluetooth",
-    "Rear Camera",
-    "Cruise Control",
-    "Heated Seats",
-    "Panoramic Roof",
-    "Alarm System",
-    "Parking Sensors",
-    "Adaptive Headlights",
-    "Keyless Entry",
-    "Adaptive Cruise Control",
-    "Automatic Traffic Sign Recognition",
-    "LED Lights",
-    "Blind Spot Monitoring System",
-    "Automatic Transmission",
-    "Electric Seats",
-    "Traction Control",
-    "Stability Control (ESP)",
-    "Electric Windows",
-    "Electric Mirrors",
-    "On-board Computer",
-    "Sunroof",
-    "Multifunction Steering Wheel",
-    "4x4 Drive",
-    "Automatic Climate Control",
-    "Tuning",
-  ];
-
-  const handleRemoveImage = (index) => {
-    setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
-  };
-
   return (
-    <div className="relative p-4 bg-white">
-      {error && (
-        <div role="alert" className="alert alert-error absolute top-0 right-0 mt-2 mr-2 w-80">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-12 w-12 shrink-0 stroke-current"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <span>{error}</span>
-        </div>
-      )}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 flex items-center justify-center py-10 px-4">
+      <div className="max-w-4xl w-full bg-white rounded-2xl shadow-2xl p-8 relative">
+        {error && (
+          <div role="alert" className="absolute top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded shadow z-10">
+            <span>{error}</span>
+          </div>
+        )}
 
-      {loading && (
-        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
-          <span className="loading loading-dots loading-lg custom-spinner"></span>
-        </div>
-      )}
+        {loading && (
+          <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
+            <span className="loading loading-dots loading-lg custom-spinner"></span>
+          </div>
+        )}
 
-      <div className="flex flex-col gap-4 justify-center">
-        <h1 className="text-2xl font-bold text-start text-black">Edit car information</h1>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3 w-full">
-          <span className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <h1 className="text-3xl font-bold text-blue-700 mb-6 text-center">Edit Car Information</h1>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <select
-              className="select select-bordered w-full bg-car-400 text-black"
+              className="select select-bordered w-full bg-blue-50 text-black"
               onChange={handleBrandChange}
               value={selectedBrand}
               name="brand"
+              required
             >
               <option disabled value="">
                 Brand
@@ -313,11 +251,12 @@ function EditForm() {
             </select>
 
             <select
-              className="select select-bordered w-full bg-car-400 text-black"
+              className="select select-bordered w-full bg-blue-50 text-black"
               disabled={!models.length}
               name="model"
               onChange={handleChange}
               value={carInfo.model}
+              required
             >
               <option disabled value="">
                 Model
@@ -330,10 +269,11 @@ function EditForm() {
             </select>
 
             <select
-              className="select select-bordered w-full bg-car-400 text-black"
+              className="select select-bordered w-full bg-blue-50 text-black"
               onChange={handleStartYearChange}
               value={selectedStartYear}
               name="year"
+              required
             >
               <option disabled value="">
                 Year
@@ -346,26 +286,29 @@ function EditForm() {
             </select>
 
             <select
-              className="select select-bordered w-full bg-car-400 text-black"
+              className="select select-bordered w-full bg-blue-50 text-black"
               name="gearbox"
               onChange={handleChange}
               value={carInfo.gearbox}
+              required
             >
-              <option disabled>Gearbox</option>
-              <option value="automatic" key="automatic">
-                Automatic
+              <option disabled value="">
+                Gearbox
               </option>
-              <option value="manual" key="manual">
-                Manual
-              </option>
+              <option value="automatic">Automatic</option>
+              <option value="manual">Manual</option>
             </select>
+
             <select
-              className="select select-bordered w-full bg-car-400 text-black"
+              className="select select-bordered w-full bg-blue-50 text-black"
               name="color"
               onChange={handleChange}
               value={carInfo.color}
+              required
             >
-              <option disabled>Color</option>
+              <option disabled value="">
+                Color
+              </option>
               {colors.map((color) => (
                 <option key={color} value={color}>
                   {color}
@@ -374,12 +317,15 @@ function EditForm() {
             </select>
 
             <select
-              className="select select-bordered w-full bg-car-400 text-black"
+              className="select select-bordered w-full bg-blue-50 text-black"
               name="fuelType"
               onChange={handleChange}
               value={carInfo.fuelType}
+              required
             >
-              <option disabled>Fuel Type</option>
+              <option disabled value="">
+                Fuel Type
+              </option>
               {fuelTypes.map((fuel) => (
                 <option key={fuel} value={fuel}>
                   {fuel}
@@ -390,83 +336,113 @@ function EditForm() {
             <input
               type="number"
               placeholder="Power (HP)"
-              className="input w-full bg-car-400 placeholder-black font-light text-black"
+              className="input input-bordered w-full bg-blue-50 placeholder-black text-black"
               min="0"
               name="power"
-              value={carInfo.power || ""}
+              value={carInfo.power === 0 ? "" : carInfo.power}
               onChange={handleChange}
+              required
             />
             <input
               type="number"
               placeholder="Price ($)"
-              className="input w-full bg-car-400 placeholder-black font-light text-black"
-              min="0"
+              className="input input-bordered w-full bg-blue-50 placeholder-black text-black"
+              min={0}
               name="price"
-              value={carInfo.price || ""}
+              value={carInfo.price === 0 ? "" : carInfo.price}
               onChange={handleChange}
+              required
             />
             <input
               type="number"
               placeholder="Displacement (cc)"
-              className="input w-full bg-car-400 placeholder-black font-light text-black"
+              className="input input-bordered w-full bg-blue-50 placeholder-black text-black"
               min="0"
               name="displacement"
-              value={carInfo.displacement || ""}
+              value={carInfo.displacement === 0 ? "" : carInfo.displacement}
               onChange={handleChange}
+              required
             />
 
             <input
               type="number"
               placeholder="Odometer (km)"
-              className="input w-full bg-car-400 placeholder-black font-light text-black"
+              className="input input-bordered w-full bg-blue-50 placeholder-black text-black"
               min="0"
               name="odometer"
-              value={carInfo.odometer || ""}
+              value={carInfo.odometer === 0 ? "" : carInfo.odometer}
               onChange={handleChange}
+              required
             />
-          </span>
 
-          <h2>Select car features:</h2>
-          <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">
-            {features.map((feature) => (
-              <label key={feature} className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={selectedFeatures.includes(feature)}
-                  onChange={() => handleCheckboxChange(feature)}
-                  className="checkbox checkbox-primary"
-                />
-                <span>{feature}</span>
-              </label>
-            ))}
+            <input
+              type="text"
+              placeholder="Location"
+              className="input input-bordered w-full bg-blue-50 placeholder-black text-black"
+              name="location"
+              value={carInfo.location}
+              onChange={handleChange}
+              required
+            />
+
+            <input
+              type="number"
+              placeholder="Phone Number"
+              className="input input-bordered w-full bg-blue-50 placeholder-black text-black"
+              name="phone"
+              value={carInfo.phone}
+              onChange={handleChange}
+              required
+            />
           </div>
-          <h2 className="text-lg font-semibold">Existing Photos</h2>
-          <div className="flex flex-wrap gap-2">
-            {files.map((file, index) => (
-              <div key={index} className="relative">
-                <img
-                  src={typeof file === "string" ? file : URL.createObjectURL(file)}
-                  alt={`Car ${index + 1}`}
-                  className="w-32 h-32 object-cover rounded-md"
-                />
-                <button
-                  type="button"
-                  className="absolute top-0 right-0 bg-red-500 text-white p-0.5 m-0.5 rounded-full"
-                  onClick={() => handleRemoveImage(index)}
-                >
-                  <X size={20} />
-                </button>
-              </div>
-            ))}
+
+          <div>
+            <h2 className="text-lg font-semibold text-blue-700 mb-2">Select Car Features</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+              {features.map((feature) => (
+                <label key={feature} className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedFeatures.includes(feature)}
+                    onChange={() => handleCheckboxChange(feature)}
+                    className="checkbox checkbox-primary"
+                  />
+                  <span className="text-gray-700">{feature}</span>
+                </label>
+              ))}
+            </div>
           </div>
-          <Dropzone
-            onDrop={(acceptedFiles) => setFiles((prevFiles) => [...prevFiles, ...acceptedFiles])}
-          />
+
+          <div>
+            <h2 className="text-lg font-semibold text-blue-700 mb-2">Existing & New Photos</h2>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {files.map((file, index) => (
+                <div key={index} className="relative">
+                  <img
+                    src={typeof file === "string" ? file : URL.createObjectURL(file)}
+                    alt={`Car ${index + 1}`}
+                    className="w-24 h-24 object-cover rounded-md"
+                  />
+                  <button
+                    type="button"
+                    className="absolute top-0 right-0 bg-red-500 text-white p-0.5 m-0.5 rounded-full"
+                    onClick={() => handleRemoveImage(index)}
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <Dropzone
+              onDrop={(acceptedFiles) => setFiles((prevFiles) => [...prevFiles, ...acceptedFiles])}
+            />
+          </div>
+
           <div className="flex justify-end mt-4">
             <input
               type="submit"
-              value="Edit"
-              className="bg-car-500 text-white p-2 rounded-md hover:cursor-pointer px-12"
+              value="Save Changes"
+              className="bg-gradient-to-r from-blue-500 to-green-500 text-white font-bold py-3 px-12 rounded-lg shadow-lg hover:scale-105 transition-all cursor-pointer"
             />
           </div>
         </form>
