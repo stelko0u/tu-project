@@ -2,7 +2,7 @@ import { createBrowserRouter, Link, Outlet } from "react-router-dom";
 import Home from "../pages/Home/Home.jsx";
 import Register from "../pages/Register/Register.jsx";
 import Login from "../pages/Login/Login.jsx";
-import { Header } from "../components/Header/Header.jsx";
+import Header from "../components/Header/Header.jsx";
 import UserGuard from "./UserGuard.jsx";
 import About from "../pages/About/About.jsx";
 import Catalog from "../pages/Catalog/Catalog.jsx";
@@ -21,6 +21,12 @@ import Contacts from "../pages/Contacts/Contacts.jsx";
 import AdminPage from "../pages/Admin/Admin.jsx";
 import ResetPassword from "../pages/ResetPassword/ResetPassword.jsx";
 
+import ChatIcon from "../components/ChatIcon/ChatIcon.jsx";
+import ChatList from "../components/ChatList/ChatList.jsx";
+import ChatComponent from "../components/Chat/ChatComponent.jsx";
+import { getAuth } from "firebase/auth";
+import { useState } from "react";
+
 export const Layout = () => {
   const outletStyle = {
     backgroundSize: "cover",
@@ -30,11 +36,43 @@ export const Layout = () => {
     flexDirection: "column",
   };
 
+  const [showChatList, setShowChatList] = useState(false);
+  const [activeChat, setActiveChat] = useState(null);
+  const auth = getAuth();
+
   return (
     <>
       <Header />
       <div style={outletStyle}>
         <Outlet />
+        {/* Chat icon for mobile, visible everywhere */}
+        {auth.currentUser && (
+          <>
+            <div className="fixed bottom-4 right-4 z-50 md:hidden bg-slate-500 p-5 rounded-full">
+              <ChatIcon onClick={() => setShowChatList(true)} />
+            </div>
+            {showChatList && !activeChat && (
+              <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex justify-end items-end">
+                <ChatList
+                  onSelectChat={(chat) => {
+                    setActiveChat(chat);
+                    setShowChatList(false);
+                  }}
+                  onClose={() => setShowChatList(false)}
+                  activeChatId={activeChat?.id}
+                />
+              </div>
+            )}
+            {activeChat && (
+              <div className="fixed inset-0 bg-white z-50 flex flex-col">
+                <ChatComponent
+                  owner={activeChat.participants.find((p) => p !== (auth.currentUser?.email || ""))}
+                  onClose={() => setActiveChat(null)}
+                />
+              </div>
+            )}
+          </>
+        )}
       </div>
       <Footer />
     </>

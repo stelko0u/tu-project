@@ -5,12 +5,19 @@ import { AuthContext } from "../../Context/AuthContext";
 import { getAuth, signOut } from "firebase/auth";
 import { FaSignInAlt, FaUserAlt } from "react-icons/fa";
 import logo2 from "../../../public/logo2.png";
-export const Header = () => {
+import ChatIcon from "../../components/ChatIcon/ChatIcon.jsx";
+import ChatList from "../../components/ChatList/ChatList.jsx";
+import ChatComponent from "../../components/Chat/ChatComponent.jsx";
+
+const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const { isAuthenticated } = useContext(AuthContext);
   const auth = getAuth();
+
+  const [showChatList, setShowChatList] = useState(false);
+  const [activeChat, setActiveChat] = useState(null);
 
   async function handleLogout(e) {
     e.preventDefault();
@@ -32,7 +39,6 @@ export const Header = () => {
         setMenuOpen(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
@@ -40,99 +46,156 @@ export const Header = () => {
   }, []);
 
   return (
-    <header className="bg-primary text-white p-1">
-      <div className="flex justify-between">
-        <nav className="hidden md:flex space-x-3 flex justify-between w-full">
-          <Link to="/" className="text-3xl font-bold">
-            <img src={logo2} alt="logo" className="w-16 h-16 scale-150 mx-5" />
+    <header className="bg-gradient-to-r from-green-700 via-green-500 to-teal-400 shadow-lg sticky top-0 z-30">
+      <div className="max-full mx-auto px-2 md:px-6 flex items-center justify-between h-20">
+        {/* Logo & Brand */}
+        <div className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2">
+            <img src={logo2} alt="logo" className="w-12 h-12 md:w-16 md:h-16" />
+            <span className="hidden sm:block text-2xl md:text-3xl font-bold text-white tracking-wide">
+              AutoCars
+            </span>
           </Link>
-          <span className="flex justify-between space-x-3 items-center">
-            <Link to="/" className="hover:mt-0.5 text-xl">
-              Home
-            </Link>
-            <Link to="/about" className="hover:mt-0.5 text-xl">
-              About
-            </Link>
-            <Link to="/catalog" className="hover:mt-0.5 text-xl">
-              Catalog
-            </Link>
-            <Link to="/faq" className="hover:mt-0.5 text-xl">
-              Help
-            </Link>
-            <Link to="/contact" className="hover:mt-0.5 text-xl">
-              Contact
-            </Link>
-            {isAuthenticated && (
-              <Link
-                to="/add"
-                className=" text-xl bg-[#004D40] py-1 px-3 rounded-md hover:bg-[#0f3a34] transition duration-300"
-              >
-                Add car
-              </Link>
-            )}
-          </span>
-          <span className="flex justify-between space-x-5 items-center pr-2 ">
-            {!isAuthenticated ? (
-              <>
-                <Link to="/login">
-                  <FaSignInAlt size={24} />
-                </Link>
+        </div>
 
-              </>
-            ) : (
-              <button onClick={() => setMenuOpen(!menuOpen)} className="flex items-center text-xl mr-2">
-                <FaUserAlt />
-              </button>
-            )}
-          </span>
-        </nav>
-
-        <span className="md:hidden p-1 flex justify-between items-center w-screen">
-          <h1 className="text-xl font-bold">AutoCars</h1>
-          <button className="md:hidden p-1 " onClick={() => setIsOpen(!isOpen)}>
-            {isOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </span>
-      </div>
-
-      {isOpen && (
-        <nav className="md:hidden p-4 flex flex-col space-y-2 items-start">
-          <Link to="/" className="hover:ml-2" onClick={closeMenu}>
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center gap-6 text-white">
+          <Link to="/" className="text-lg font-medium hover:text-teal-100 transition">
             Home
           </Link>
-          <Link to="/about" className="hover:ml-2" onClick={closeMenu}>
+          <Link to="/about" className="text-lg font-medium hover:text-teal-100 transition">
             About
           </Link>
-          <Link to="/catalog" className="hover:ml-2" onClick={closeMenu}>
+          <Link to="/catalog" className="text-lg font-medium hover:text-teal-100 transition">
             Catalog
           </Link>
-          <Link to="/faq" className="hover:ml-2" onClick={closeMenu}>
+          <Link to="/faq" className="text-lg font-medium hover:text-teal-100 transition">
             Help
           </Link>
-          <Link to="/contact" className="hover:ml-2" onClick={closeMenu}>
+          <Link to="/contact" className="text-lg font-medium hover:text-teal-100 transition">
             Contact
           </Link>
           {isAuthenticated && (
-            <Link to="/add" className="hover:ml-2" onClick={closeMenu}>
-              Add car
+            <Link
+              to="/add"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded-lg font-semibold shadow transition"
+            >
+              Add Car
             </Link>
           )}
+        </nav>
 
+        {/* Desktop User Actions */}
+        <div className="hidden md:flex items-center gap-4 text-white">
+          {isAuthenticated && <ChatIcon onClick={() => setShowChatList((v) => !v)} />}
+          {!isAuthenticated ? (
+            <Link
+              to="/login"
+              className="flex items-center gap-1 text-lg font-medium hover:text-teal-100 transition"
+            >
+              <FaSignInAlt size={22} />
+              Login
+            </Link>
+          ) : (
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="flex items-center gap-1 text-lg font-medium hover:text-teal-100 transition"
+            >
+              <FaUserAlt size={22} />
+              Profile
+            </button>
+          )}
+        </div>
+
+        {/* Mobile Hamburger */}
+        <div className="md:hidden flex items-center">
+          <button
+            className="text-white p-2"
+            onClick={() => setIsOpen(!isOpen)}
+            aria-label="Open menu"
+          >
+            {isOpen ? <X size={28} /> : <Menu size={28} />}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Navigation */}
+      {isOpen && (
+        <nav className="md:hidden bg-white shadow-lg rounded-b-xl px-4 py-4 flex flex-col gap-2 animate-slideDown">
+          <Link
+            to="/"
+            className="py-2 px-2 rounded hover:bg-teal-50 font-medium"
+            onClick={closeMenu}
+          >
+            Home
+          </Link>
+          <Link
+            to="/about"
+            className="py-2 px-2 rounded hover:bg-teal-50 font-medium"
+            onClick={closeMenu}
+          >
+            About
+          </Link>
+          <Link
+            to="/catalog"
+            className="py-2 px-2 rounded hover:bg-teal-50 font-medium"
+            onClick={closeMenu}
+          >
+            Catalog
+          </Link>
+          <Link
+            to="/faq"
+            className="py-2 px-2 rounded hover:bg-teal-50 font-medium"
+            onClick={closeMenu}
+          >
+            Help
+          </Link>
+          <Link
+            to="/contact"
+            className="py-2 px-2 rounded hover:bg-teal-50 font-medium"
+            onClick={closeMenu}
+          >
+            Contact
+          </Link>
+          {isAuthenticated && (
+            <Link
+              to="/add"
+              className="py-2 px-2 rounded bg-blue-600 text-white font-semibold shadow hover:bg-blue-700 transition"
+              onClick={closeMenu}
+            >
+              Add Car
+            </Link>
+          )}
           {!isAuthenticated ? (
             <>
-              <Link to="/login" className="hover:ml-2" onClick={closeMenu}>
+              <Link
+                to="/login"
+                className="py-2 px-2 rounded hover:bg-teal-50 font-medium"
+                onClick={closeMenu}
+              >
                 Login
               </Link>
-              <Link to="/register" className="hover:ml-2" onClick={closeMenu}>
+              <Link
+                to="/register"
+                className="py-2 px-2 rounded hover:bg-teal-50 font-medium"
+                onClick={closeMenu}
+              >
                 Register
               </Link>
             </>
           ) : (
             <>
-              <Link to="/profile" className="hover:ml-2" onClick={closeMenu}>
-                My profile
+              <Link
+                to="/profile"
+                className="py-2 px-2 rounded hover:bg-teal-50 font-medium"
+                onClick={closeMenu}
+              >
+                My Profile
               </Link>
-              <button onClick={handleLogout} className="hover:ml-2">
+              <button
+                onClick={handleLogout}
+                className="py-2 px-2 rounded hover:bg-teal-50 font-medium text-left w-full"
+              >
                 Logout
               </button>
             </>
@@ -140,11 +203,11 @@ export const Header = () => {
         </nav>
       )}
 
-      
+      {/* Desktop Profile Dropdown */}
       {menuOpen && isAuthenticated && (
         <div
           ref={menuRef}
-          className="absolute right-4 mt-2 bg-white text-black rounded-md shadow-lg p-3 flex flex-col z-20"
+          className="absolute right-6 top-20 bg-white text-black rounded-md shadow-lg p-3 flex flex-col z-20 min-w-[160px]"
         >
           <Link
             to="/profile"
@@ -153,11 +216,31 @@ export const Header = () => {
           >
             My Profile
           </Link>
-          <button onClick={handleLogout} className="hover:bg-gray-200 p-2 rounded">
+          <button onClick={handleLogout} className="hover:bg-gray-200 p-2 rounded text-left w-full">
             Logout
           </button>
         </div>
       )}
+
+      {/* Chat List & Chat Component */}
+      {showChatList && isAuthenticated && (
+        <ChatList
+          onSelectChat={(chat) => {
+            setActiveChat(chat);
+            setShowChatList(false);
+          }}
+          onClose={() => setShowChatList(false)}
+          activeChatId={activeChat?.id}
+        />
+      )}
+      {activeChat && isAuthenticated && (
+        <ChatComponent
+          owner={activeChat.participants.find((p) => p !== (auth.currentUser?.email || ""))}
+          onClose={() => setActiveChat(null)}
+        />
+      )}
     </header>
   );
 };
+
+export default Header;

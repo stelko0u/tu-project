@@ -30,14 +30,14 @@ export default function Footer() {
   };
 
   return (
-    <footer className="p-6 bg-zinc-900 text-white">
+    <footer className="bg-gradient-to-r from-cyan-700 via-blue-600 to-indigo-500 text-white py-8 px-4 mt-auto ">
       <div className="container mx-auto text-center space-y-4">
         <div>
           <h2 className="text-xl font-semibold">AutoCars</h2>
-          <p className="text-base text-gray-400">The best car deals in one place.</p>
+          <p className="text-base text-white">The best car deals in one place.</p>
         </div>
 
-        <div className="flex justify-center space-x-6 text-sm">
+        <div className="flex justify-center space-x-6 text-md">
           <a href="/about" className="hover:underline">
             About us
           </a>
@@ -55,7 +55,7 @@ export default function Footer() {
           <img src={youtube} alt="Twitter" className="h-6 w-6" />
         </div>
 
-        <div className="text-sm text-gray-400">
+        <div className="text-sm text-white font-semibold">
           <p>© {year} AutoCars. All rights reserved.</p>
           <div className="flex justify-center space-x-4">
             <button onClick={openModalTerms} className="hover:underline">

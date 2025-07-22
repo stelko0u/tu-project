@@ -1,26 +1,57 @@
 import { createContext, useState, useEffect } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-
+import { getFirestore, collection, onSnapshot } from "firebase/firestore";
+import { registerUserActivity } from "../services/lastActive.jsx";
 export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const auth = getAuth();
+  const db = getFirestore();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [usersMeta, setUsersMeta] = useState({});
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
+      console.log("Auth state changed:", user);
     });
     return () => {
       unsubscribe();
     };
   }, [auth]);
+  useEffect(() => {
+    let stopActivity;
+    if (user) {
+      stopActivity = registerUserActivity();
+    }
+    return () => {
+      if (stopActivity) stopActivity();
+    };
+  }, [user]);
+
+  useEffect(() => {
+    const usersRef = collection(db, "users");
+    const unsub = onSnapshot(usersRef, (snap) => {
+      const meta = {};
+      snap.forEach((doc) => {
+        const data = doc.data();
+        console.log(data);
+        meta[data.email] = {
+          lastActive: user || null,
+          ...data,
+        };
+      });
+      setUsersMeta(meta);
+    });
+    return () => unsub();
+  }, [db]);
 
   const values = {
     user,
     isAuthenticated: !!user,
+    usersMeta,
   };
 
   return <AuthContext.Provider value={values}>{!loading && children}</AuthContext.Provider>;
