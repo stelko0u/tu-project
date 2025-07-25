@@ -60,7 +60,21 @@ function CarForm() {
 
   const brandAndModels = {
     Audi: [
-      "80", "90", "100", "А1", "А2", "A3", "A4", "A5", "A6", "A7", "A8", "Q3", "Q5", "Q7", "Q8",
+      "80",
+      "90",
+      "100",
+      "А1",
+      "А2",
+      "A3",
+      "A4",
+      "A5",
+      "A6",
+      "A7",
+      "A8",
+      "Q3",
+      "Q5",
+      "Q7",
+      "Q8",
     ],
     BMW: ["X5", "320i", "M3", "M5", "X3", "X6", "X7", "X1", "X2", "X4"],
     Mercedes: ["C-Class", "E-Class", "GLA", "GLC", "GLE", "GLS", "S-Class"],
@@ -85,18 +99,50 @@ function CarForm() {
   };
 
   const colors = [
-    "Red", "Green", "Blue", "Yellow", "Purple", "Orange", "Pink", "Brown", "Black", "White", "Silver Gray",
+    "Red",
+    "Green",
+    "Blue",
+    "Yellow",
+    "Purple",
+    "Orange",
+    "Pink",
+    "Brown",
+    "Black",
+    "White",
+    "Silver Gray",
   ];
 
   const fuelTypes = ["Petrol", "Diesel", "Electric", "Hybrid"];
 
   const features = [
-    "Air Conditioning", "Leather Seats", "Navigation System", "Bluetooth", "Rear Camera", "Cruise Control",
-    "Heated Seats", "Panoramic Roof", "Alarm System", "Parking Sensors", "Adaptive Headlights", "Keyless Entry",
-    "Adaptive Cruise Control", "Automatic Traffic Sign Recognition", "LED Lights", "Blind Spot Monitoring System",
-    "Automatic Transmission", "Electric Seats", "Traction Control", "Stability Control (ESP)", "Electric Windows",
-    "Electric Mirrors", "On-board Computer", "Sunroof", "Multifunction Steering Wheel", "4x4 Drive",
-    "Automatic Climate Control", "Tuning",
+    "Air Conditioning",
+    "Leather Seats",
+    "Navigation System",
+    "Bluetooth",
+    "Rear Camera",
+    "Cruise Control",
+    "Heated Seats",
+    "Panoramic Roof",
+    "Alarm System",
+    "Parking Sensors",
+    "Adaptive Headlights",
+    "Keyless Entry",
+    "Adaptive Cruise Control",
+    "Automatic Traffic Sign Recognition",
+    "LED Lights",
+    "Blind Spot Monitoring System",
+    "Automatic Transmission",
+    "Electric Seats",
+    "Traction Control",
+    "Stability Control (ESP)",
+    "Electric Windows",
+    "Electric Mirrors",
+    "On-board Computer",
+    "Sunroof",
+    "Multifunction Steering Wheel",
+    "4x4 Drive",
+    "Automatic Climate Control",
+    "Tuning",
   ];
 
   const handleCheckboxChange = (feature) => {
@@ -122,7 +168,17 @@ function CarForm() {
     setLoading(true);
 
     const requiredFields = [
-      "brand", "model", "gearbox", "price", "color", "fuelType", "power", "displacement", "odometer", "phone", "location",
+      "brand",
+      "model",
+      "gearbox",
+      "price",
+      "color",
+      "fuelType",
+      "power",
+      "displacement",
+      "odometer",
+      "phone",
+      "location",
     ];
 
     const missingFields = requiredFields.filter((field) => !carInfo[field]);
@@ -193,7 +249,10 @@ function CarForm() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 flex items-center justify-center py-10 px-4">
       <div className="max-w-4xl w-full bg-white rounded-2xl shadow-2xl p-8 relative">
         {error && (
-          <div role="alert" className="absolute top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded shadow z-10">
+          <div
+            role="alert"
+            className="absolute top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded shadow z-10"
+          >
             <span>{error}</span>
           </div>
         )}

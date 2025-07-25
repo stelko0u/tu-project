@@ -63,9 +63,7 @@ export default function ChatComponent({ owner, onClose }) {
 
   useEffect(() => {
     if (!owner || !usersMeta) return;
-    console.log("usersMeta:", usersMeta);
-    console.log("owner:", owner);
-    console.log("usersMeta[owner]:", usersMeta[owner]);
+
     if (usersMeta[owner] && usersMeta[owner].lastActive) {
       setOwnerStatus(usersMeta[owner].lastActive);
     } else {
@@ -75,7 +73,6 @@ export default function ChatComponent({ owner, onClose }) {
 
   useEffect(() => {
     if (!owner || !usersMeta) return;
-    console.log("usersMeta:", usersMeta);
 
     if (usersMeta[owner] && usersMeta[owner].lastActive) {
       setOwnerStatus(usersMeta[owner].lastActive);
@@ -88,7 +85,6 @@ export default function ChatComponent({ owner, onClose }) {
       } else {
         setOwnerStatus(null);
       }
-      console.log("usersMeta (interval):", usersMeta);
     }, 30000);
     return () => clearInterval(interval);
   }, [owner, usersMeta]);
@@ -143,8 +139,11 @@ export default function ChatComponent({ owner, onClose }) {
       style={{ minWidth: "0" }}
     >
       <div className="flex justify-between items-center border-b px-4 py-2  border-gray-300">
-        <div>
-          <span className="font-bold text-black">{owner ? `Chat with ${owner}` : "Chat"}</span>
+        <div className="flex flex-col">
+          <span className="font-bold text-black text-xl">
+            Chat with {usersMeta?.[owner]?.name || "<No Name>"}
+          </span>
+          <span className="font-normal text-sm text-black">{owner ? `${owner}` : "Chat"}</span>
           <div className="text-xs text-gray-500 mt-1 flex align-center items-center">
             {ownerStatus ? timeAgo(ownerStatus) : ""}
           </div>

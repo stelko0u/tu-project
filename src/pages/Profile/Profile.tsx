@@ -9,7 +9,7 @@ import {
   getDoc,
   updateDoc,
 } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
+import { getAuth, sendEmailVerification } from "firebase/auth";
 import { AuthContext } from "../../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import CarBox from "../../components/CarBox/CarBox";
@@ -53,7 +53,7 @@ export default function Profile() {
   const auth = getAuth();
   const db = getFirestore();
   const navigate = useNavigate();
-
+  console.log("User:", auth.currentUser?.emailVerified);
   useEffect(() => {
     const fetchLikedCars = async () => {
       if (!isAuthenticated) return;
@@ -131,6 +131,16 @@ export default function Profile() {
     );
   }, [isAuthenticated, auth, db]);
 
+  const handleSendEmailVerification = async () => {
+    if (!auth.currentUser) return;
+    try {
+      await sendEmailVerification(auth.currentUser);
+      alert("Verification email sent. Please check your inbox.");
+    } catch (error) {
+      console.error("Error sending verification email:", error);
+      alert("Failed to send verification email.");
+    }
+  };
   const handleEdit = () => {
     setEditMode(true);
     setError("");
@@ -304,6 +314,7 @@ export default function Profile() {
                         value={userProfile?.email || auth.currentUser?.email || ""}
                         disabled
                       />
+
                       {error && <p className="text-red-500 font-bold mb-2">{error}</p>}
                       <div className="flex gap-2">
                         <button
@@ -336,6 +347,10 @@ export default function Profile() {
                         <span className="font-semibold">Email:</span>{" "}
                         <span>{userProfile?.email || auth.currentUser?.email || "-"}</span>
                       </div>
+                      <div>
+                        <span className="font-semibold">Email Verified:</span>{" "}
+                        <span>{auth.currentUser?.emailVerified ? "Yes" : "No"}</span>
+                      </div>
                       <button
                         onClick={handleEdit}
                         className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition w-fit"
@@ -346,6 +361,17 @@ export default function Profile() {
                   )}
                 </div>
               </div>
+              
+
+              {!auth.currentUser?.emailVerified && (
+                <button
+                  onClick={handleSendEmailVerification}
+                  className="mt-2 bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 transition w-fit"
+                >
+                  Send Email Verification
+                </button>
+              )}
+
               {auth.currentUser?.email === "admin@admin.com" && (
                 <div className="flex flex-col items-center">
                   <button

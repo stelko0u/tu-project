@@ -27,6 +27,8 @@ export default function Details() {
   const auth = getAuth();
   const navigate = useNavigate();
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const { user } = useContext(AuthContext);
+  const [verifyEmail, setVerifyEmail] = useState(false);
 
   const handleLike = async () => {
     if (!isAuthenticated) return;
@@ -106,6 +108,14 @@ export default function Details() {
     }
   }, [carId]);
 
+  useEffect(() => {
+    if (!user) return;
+
+    if (user.emailVerified) {
+      setVerifyEmail(true);
+    }
+  }, [user]);
+
   const openDeleteModal = (isOpen) => {
     setIsOpenDeleteModal(isOpen);
   };
@@ -180,7 +190,6 @@ export default function Details() {
               ))}
             </div>
           </div>
-          {/* Right: Info */}
           <div className="lg:w-1/2 p-8 flex flex-col justify-between">
             <div>
               <h1 className="text-3xl font-bold text-blue-700 mb-2">
@@ -242,14 +251,16 @@ export default function Details() {
                 </span>
               </div>
               <div className="flex gap-2">
-                {!isOwner && isAuthenticated && (
+                {!isOwner && isAuthenticated && user && (
                   <button
-                    className="bg-blue-500 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-600 transition-all"
+                    className="bg-blue-500 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-600 transition-all disabled:bg-blue-800 disabled:cursor-not-allowed"
                     onClick={() => setIsChatOpen(true)}
+                    disabled={!user.emailVerified}
                   >
-                    Contact Owner
+                    {verifyEmail ? "Chat with Owner" : "Verify Email to Chat"}
                   </button>
                 )}
+
                 {isOwner && isAuthenticated && (
                   <>
                     <button
@@ -273,7 +284,6 @@ export default function Details() {
           </div>
         </div>
       </div>
-      {/* Delete Modal */}
       <Modal
         isOpen={isOpenDeleteModal}
         onRequestClose={closeDeleteModal}
@@ -301,7 +311,6 @@ export default function Details() {
           </div>
         </div>
       </Modal>
-      {/* Image Modal */}
       <Modal
         isOpen={isModalOpen}
         onRequestClose={closeModal}
@@ -332,7 +341,6 @@ export default function Details() {
           </Carousel>
         </div>
       </Modal>
-      {/* Chat Modal */}
       {isChatOpen && (
         <Modal
           isOpen={isChatOpen}

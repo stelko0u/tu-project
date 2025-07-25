@@ -14,8 +14,8 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      // console.log("User changed:", currentUser);
       setLoading(false);
-      console.log("Auth state changed:", user);
     });
     return () => {
       unsubscribe();
@@ -37,7 +37,6 @@ export function AuthProvider({ children }) {
       const meta = {};
       snap.forEach((doc) => {
         const data = doc.data();
-        console.log(data);
         meta[data.email] = {
           lastActive: user || null,
           ...data,

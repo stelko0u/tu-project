@@ -48,7 +48,6 @@ const Header = () => {
   return (
     <header className="bg-gradient-to-r from-green-700 via-green-500 to-teal-400 shadow-lg sticky top-0 z-30">
       <div className="max-full mx-auto px-2 md:px-6 flex items-center justify-between h-20">
-        {/* Logo & Brand */}
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center gap-2">
             <img src={logo2} alt="logo" className="w-12 h-12 md:w-16 md:h-16" />
@@ -58,7 +57,6 @@ const Header = () => {
           </Link>
         </div>
 
-        {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-6 text-white">
           <Link to="/" className="text-lg font-medium hover:text-teal-100 transition">
             Home
@@ -102,12 +100,10 @@ const Header = () => {
               className="flex items-center gap-1 text-lg font-medium hover:text-teal-100 transition"
             >
               <FaUserAlt size={22} />
-              Profile
             </button>
           )}
         </div>
 
-        {/* Mobile Hamburger */}
         <div className="md:hidden flex items-center">
           <button
             className="text-white p-2"
@@ -119,7 +115,6 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Mobile Navigation */}
       {isOpen && (
         <nav className="md:hidden bg-white shadow-lg rounded-b-xl px-4 py-4 flex flex-col gap-2 animate-slideDown">
           <Link
@@ -203,7 +198,6 @@ const Header = () => {
         </nav>
       )}
 
-      {/* Desktop Profile Dropdown */}
       {menuOpen && isAuthenticated && (
         <div
           ref={menuRef}
@@ -222,7 +216,6 @@ const Header = () => {
         </div>
       )}
 
-      {/* Chat List & Chat Component */}
       {showChatList && isAuthenticated && (
         <ChatList
           onSelectChat={(chat) => {

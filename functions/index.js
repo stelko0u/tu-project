@@ -1,62 +1,56 @@
-const API_BASE_URL = "https://us-central1-car-project-5ba3d.cloudfunctions.net/api"
-
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
-const cors = require("cors");
-const express = require("express");
+const { Storage } = require("@google-cloud/storage");
+const sharp = require("sharp");
+const path = require("path");
+const os = require("os");
+const fs = require("fs");
 
 admin.initializeApp();
+const gcs = new Storage();
 
-const getUsers = async () => {
-  const listUsersResult = await admin.auth().listUsers(1000);
-  return listUsersResult.users.map((userRecord) => ({
-    uid: userRecord.uid,
-    email: userRecord.email,
-    emailVerified: userRecord.emailVerified,
-    phoneNumber: userRecord.phoneNumber,
-    displayName: userRecord.displayName,
-    disabled: userRecord.disabled,
-    metadata: userRecord.metadata,
-  }));
-};
+exports.generateThumbnails = functions.storage.object().onFinalize(async (object) => {
+  const bucket = gcs.bucket(object.bucket);
+  const filePath = object.name;
+  const contentType = object.contentType;
 
-const deleteUser = async (uid) => {
-  try {
-    await admin.auth().deleteUser(uid);
-    console.log(`Successfully deleted user with uid: ${uid}`);
-    return { success: true };
-  } catch (error) {
-    console.error("Error deleting user:", error);
-    return { success: false, error };
-  }
-};
+  if (!contentType.startsWith("image/")) return null;
+  if (filePath.includes("thumbnails/")) return null; // вече е thumbnail
 
-const app = require("express")();
-app.use(cors({ origin: true }));
-app.use(express.json());
+  const fileName = path.basename(filePath);
+  const tempFilePath = path.join(os.tmpdir(), fileName);
 
-app.get("/getUsers", async (req, res) => {
-  try {
-    const users = await getUsers();
-    res.status(200).json(users);
-  } catch (err) {
-    console.error("Error fetching users:", err);
-    res.status(500).send("Error fetching users");
-  }
+  // Изтегляне на оригинала
+  await bucket.file(filePath).download({ destination: tempFilePath });
+
+  const baseName = fileName.replace(/\.[^/.]+$/, "");
+  const folder = path.dirname(filePath);
+
+  // Размери
+  const sizes = [
+    { width: 400, height: 225, suffix: "_400x225" },
+    { width: 800, height: 450, suffix: "_800x450" },
+  ];
+
+  const uploadPromises = sizes.map(async ({ width, height, suffix }) => {
+    const thumbFileName = `${baseName}${suffix}.webp`;
+    const thumbPath = path.join(os.tmpdir(), thumbFileName);
+
+    await sharp(tempFilePath)
+      .resize(width, height)
+      .webp({ quality: 80 })
+      .toFile(thumbPath);
+
+    const destination = `${folder}/thumbnails/${thumbFileName}`;
+    return bucket.upload(thumbPath, {
+      destination,
+      metadata: {
+        contentType: "image/webp",
+      },
+    });
+  });
+
+  await Promise.all(uploadPromises);
+  fs.unlinkSync(tempFilePath); // изтрий оригинала от temp
+  return null;
 });
-
-app.post("/deleteUser", async (req, res) => {
-  const { uid } = req.body;
-  if (!uid) {
-    return res.status(400).json({ success: false, error: "Missing uid" });
-  }
-  try {
-    await admin.auth().deleteUser(uid);
-    res.status(200).json({ success: true });
-  } catch (err) {
-    console.error("Error deleting user:", err);
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-exports.api = functions.https.onRequest(app);
