@@ -4,12 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --port 3000 --host",
+    "dev": "concurrently \"vite --port 3000 --host\" \"node generate-thumbnails.cjs\" \"node download-new-files.cjs\"",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "thumbnails": "node generate-thumbnails.cjs",
-    "download": "node download-stnorage-file.cjs"
+    "download": "node download-storage-file.cjs"
   },
   "dependencies": {
     "@firebase/database": "^1.0.12",
@@ -20,6 +20,7 @@
     "@headlessui/react": "^2.2.0",
     "@heroicons/react": "^2.2.0",
     "@tailwindcss/vite": "^4.0.8",
+    "concurrently": "^9.2.0",
     "dropzone": "^6.0.0-beta.2",
     "firebase": "^11.3.1",
     "firebase-admin": "^13.4.0",

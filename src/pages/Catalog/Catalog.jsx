@@ -69,8 +69,10 @@ export default function Catalog() {
     const carPrice = typeof car.price === "number" ? car.price : parseFloat(car.price);
     const minPriceFilter = filters.minPrice === "" ? null : parseFloat(filters.minPrice);
     const maxPriceFilter = filters.maxPrice === "" ? null : parseFloat(filters.maxPrice);
-    const matchesMinPrice = minPriceFilter === null || (!isNaN(minPriceFilter) && carPrice >= minPriceFilter);
-    const matchesMaxPrice = maxPriceFilter === null || (!isNaN(maxPriceFilter) && carPrice <= maxPriceFilter);
+    const matchesMinPrice =
+      minPriceFilter === null || (!isNaN(minPriceFilter) && carPrice >= minPriceFilter);
+    const matchesMaxPrice =
+      maxPriceFilter === null || (!isNaN(maxPriceFilter) && carPrice <= maxPriceFilter);
     const matchesYear = filters.year ? String(car.year) === String(filters.year) : true;
     const matchesFuelType = filters.fuelType ? car.fuelType === filters.fuelType : true;
     const matchesGearbox = filters.gearbox ? car.gearbox === filters.gearbox : true;
@@ -120,7 +122,8 @@ export default function Catalog() {
   const handleMinPriceChange = (event) => {
     const value = event.target.value;
     const numberValue = parseInt(value, 10);
-    const nonNegativeValue = value === "" ? "" : isNaN(numberValue) ? value : Math.max(0, numberValue);
+    const nonNegativeValue =
+      value === "" ? "" : isNaN(numberValue) ? value : Math.max(0, numberValue);
     setFilters((prevFilters) => ({
       ...prevFilters,
       minPrice: nonNegativeValue,
@@ -130,7 +133,8 @@ export default function Catalog() {
   const handleMaxPriceChange = (event) => {
     const value = event.target.value;
     const numberValue = parseInt(value, 10);
-    const nonNegativeValue = value === "" ? "" : isNaN(numberValue) ? value : Math.max(0, numberValue);
+    const nonNegativeValue =
+      value === "" ? "" : isNaN(numberValue) ? value : Math.max(0, numberValue);
     setFilters((prevFilters) => ({
       ...prevFilters,
       maxPrice: nonNegativeValue,
@@ -163,8 +167,21 @@ export default function Catalog() {
 
   const carData = {
     Audi: [
-      "80", "90", "100", "А1", "А2", "A3", "A4", "A5", "A6", "A7", "A8",
-      "Q3", "Q5", "Q7", "Q8",
+      "80",
+      "90",
+      "100",
+      "А1",
+      "А2",
+      "A3",
+      "A4",
+      "A5",
+      "A6",
+      "A7",
+      "A8",
+      "Q3",
+      "Q5",
+      "Q7",
+      "Q8",
     ],
     BMW: ["X5", "320i", "M3", "M5", "X3", "X6", "X7", "X1", "X2", "X4"],
     Mercedes: ["C-Class", "E-Class", "GLA", "GLC", "GLE", "GLS", "S-Class"],
@@ -189,14 +206,34 @@ export default function Catalog() {
   };
 
   const featuresList = [
-    "Air Conditioning", "Leather Seats", "Navigation System", "Bluetooth",
-    "Rear Camera", "Cruise Control", "Heated Seats", "Panoramic Roof",
-    "Alarm System", "Parking Sensors", "Adaptive Headlights", "Keyless Entry",
-    "Adaptive Cruise Control", "Automatic Traffic Sign Recognition", "LED Lights",
-    "Blind Spot Monitoring System", "Automatic Transmission", "Electric Seats",
-    "Traction Control", "Stability Control (ESP)", "Electric Windows",
-    "Electric Mirrors", "On-board Computer", "Sunroof", "Multifunction Steering Wheel",
-    "4x4 Drive", "Automatic Climate Control", "Tuning",
+    "Air Conditioning",
+    "Leather Seats",
+    "Navigation System",
+    "Bluetooth",
+    "Rear Camera",
+    "Cruise Control",
+    "Heated Seats",
+    "Panoramic Roof",
+    "Alarm System",
+    "Parking Sensors",
+    "Adaptive Headlights",
+    "Keyless Entry",
+    "Adaptive Cruise Control",
+    "Automatic Traffic Sign Recognition",
+    "LED Lights",
+    "Blind Spot Monitoring System",
+    "Automatic Transmission",
+    "Electric Seats",
+    "Traction Control",
+    "Stability Control (ESP)",
+    "Electric Windows",
+    "Electric Mirrors",
+    "On-board Computer",
+    "Sunroof",
+    "Multifunction Steering Wheel",
+    "4x4 Drive",
+    "Automatic Climate Control",
+    "Tuning",
   ];
 
   const years = [];
@@ -205,7 +242,17 @@ export default function Catalog() {
   const fuelTypes = ["Petrol", "Diesel", "Electric", "Hybrid"];
   const gearboxes = ["Automatic", "Manual"];
   const colors = [
-    "Red", "Green", "Blue", "Yellow", "Purple", "Orange", "Pink", "Brown", "Black", "White", "Silver Gray",
+    "Red",
+    "Green",
+    "Blue",
+    "Yellow",
+    "Purple",
+    "Orange",
+    "Pink",
+    "Brown",
+    "Black",
+    "White",
+    "Silver Gray",
   ];
 
   const openModal = () => setModalOpen(true);
@@ -351,7 +398,6 @@ export default function Catalog() {
           </div>
         </div>
 
-        {/* Features Modal */}
         {isModalOpen && (
           <div
             className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
@@ -387,7 +433,6 @@ export default function Catalog() {
           </div>
         )}
 
-        {/* Cars Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
           {filteredCars.map((car) => (
             <CarBox key={car.id} car={car} />

@@ -18,7 +18,7 @@ import NotFound from "../pages/NotFound/NotFound.jsx";
 import Profile from "../pages/Profile/Profile.js";
 import FAQ from "../pages/FAQ/faq.jsx";
 import Contacts from "../pages/Contacts/Contacts.jsx";
-import AdminPage from "../pages/Admin/Admin.jsx";
+import AdminPage from "../pages/Admin/Admin.jsx"
 import ForgotPassword from "../pages/ForgotPassword/ForgotPassword.jsx";
 
 import ChatIcon from "../components/ChatIcon/ChatIcon.jsx";
@@ -48,7 +48,6 @@ export const Layout = () => {
       <Header />
       <div style={outletStyle}>
         <Outlet />
-        {/* Chat icon for mobile, visible everywhere */}
         {auth.currentUser && (
           <>
             <div className="fixed bottom-4 right-4 z-50 md:hidden bg-slate-500 p-5 rounded-full">

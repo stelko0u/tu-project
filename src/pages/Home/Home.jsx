@@ -87,7 +87,7 @@ export default function Home() {
           </div>
           <div className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center text-center">
             <span className="text-4xl mb-2">🔒</span>
-            <h3 className="font-semibold text-lg mb-2 text-blue-600">Secure Transactions</h3>
+            <h3 className="font-semibold text-lg mb-2 text-blue-600">Secure </h3>
             <p className="text-gray-600">
               Your safety is our priority. Communicate securely and avoid scams with verified users.
             </p>

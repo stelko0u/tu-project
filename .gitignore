@@ -26,3 +26,5 @@ originals
 public/images/cars/thumbnails
 serviceAccountKey.json
 service-account-key.json
+npmrundev.txt
+verifyEmail.cjs
