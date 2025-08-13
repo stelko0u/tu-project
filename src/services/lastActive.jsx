@@ -13,7 +13,6 @@ export function registerUserActivity() {
     if (!user || !user.email) return;
 
     const now = Date.now();
-    // Изпращай заявка само ако са минали поне 30 секунди
     if (now - lastUpdate < 30000) return;
 
     lastUpdate = now;
@@ -29,14 +28,13 @@ export function registerUserActivity() {
   function activityHandler() {
     clearTimeout(timeoutId);
     updateLastActive();
-    timeoutId = setTimeout(updateLastActive, 30000); // еднократно повикване
+    timeoutId = setTimeout(updateLastActive, 30000);
   }
 
   window.addEventListener("mousemove", activityHandler);
   window.addEventListener("keydown", activityHandler);
   window.addEventListener("touchstart", activityHandler);
 
-  // Ако искаш да спреш слушането:
   return () => {
     window.removeEventListener("mousemove", activityHandler);
     window.removeEventListener("keydown", activityHandler);

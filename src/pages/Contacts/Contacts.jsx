@@ -112,7 +112,6 @@ export default function Contacts() {
           createdAt: new Date(),
         });
 
-        console.log("The form was sent:", { name, email, phone, message, agreement });
         setIsSuccess(true);
         setTimeout(() => setIsSuccess(false), 3000);
         setName("");

@@ -4,12 +4,12 @@ export function getThumbnailPaths(photoUrl) {
   const pathMatch = photoUrl.match(/\/o\/(.+?)\?/);
   if (!pathMatch) return null;
 
-  const decodedPath = decodeURIComponent(pathMatch[1]); // "cars/pic1.png"
-  const parts = decodedPath.split("/"); // ["cars", "pic1.png"]
+  const decodedPath = decodeURIComponent(pathMatch[1]);
+  const parts = decodedPath.split("/");
   if (parts.length < 2) return null;
 
-  const fileName = parts[1]; // "pic1.png"
-  const baseName = fileName.replace(/\.[^/.]+$/, ""); // "pic1"
+  const fileName = parts[1];
+  const baseName = fileName.replace(/\.[^/.]+$/, "");
 
   return {
     low: `/images/cars/thumbnails/${baseName}_400x225.webp`,

@@ -10,7 +10,7 @@ import {
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { FaCheck, FaCheckDouble } from "react-icons/fa6";
-import { AuthContext } from "../../Context/AuthContext"; // useAuth context
+import { AuthContext } from "../../Context/AuthContext";
 import { Dot } from "lucide-react";
 
 function timeAgo(date) {

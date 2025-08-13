@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { getThumbnailPaths } from "../../utils/getThumbnailPaths"; // Assuming this utility function is defined in utils
+import { getThumbnailPaths } from "../../utils/getThumbnailPaths";
 
 export default function CarBox({ car }) {
   const thumbnailPaths = getThumbnailPaths(car.photos?.[0]);

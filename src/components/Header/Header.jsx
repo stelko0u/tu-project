@@ -51,9 +51,7 @@ const Header = () => {
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center gap-2">
             <img src={logo2} alt="logo" className="w-12 h-12 md:w-16 md:h-16" />
-            <span className="hidden sm:block text-2xl md:text-3xl font-bold text-white tracking-wide">
-              AutoCars
-            </span>
+            
           </Link>
         </div>
 
@@ -83,7 +81,6 @@ const Header = () => {
           )}
         </nav>
 
-        {/* Desktop User Actions */}
         <div className="hidden md:flex items-center gap-4 text-white">
           {isAuthenticated && <ChatIcon onClick={() => setShowChatList((v) => !v)} />}
           {!isAuthenticated ? (

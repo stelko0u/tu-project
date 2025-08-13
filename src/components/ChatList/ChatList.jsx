@@ -61,7 +61,7 @@ export default function ChatList({ onSelectChat, onClose, activeChatId }) {
       style={{
         maxWidth: "100vw",
         maxHeight: "100vh",
-        userSelect: "none", // спира селектирането на текст
+        userSelect: "none", 
         WebkitUserSelect: "none",
         msUserSelect: "none",
       }}

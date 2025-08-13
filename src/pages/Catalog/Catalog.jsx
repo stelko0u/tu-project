@@ -261,7 +261,6 @@ export default function Catalog() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 py-8 px-2">
       <div className="max-w-7xl mx-auto">
-        {/* Filters */}
         <div className="bg-white rounded-xl shadow-lg p-4 mb-8 flex flex-wrap gap-4 items-center justify-between">
           <div className="flex flex-wrap gap-4 items-center w-full">
             <select

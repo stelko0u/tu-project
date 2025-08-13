@@ -48,12 +48,11 @@ export default function Profile() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState<"ads" | "liked" | "settings" | "messages">("ads");
-  const [newMessages, setNewMessages] = useState<number>(2); // mock
+  const [newMessages, setNewMessages] = useState<number>(2);
   const [messages, setMessages] = useState<Message[]>([]);
   const auth = getAuth();
   const db = getFirestore();
   const navigate = useNavigate();
-  console.log("User:", auth.currentUser?.emailVerified);
   useEffect(() => {
     const fetchLikedCars = async () => {
       if (!isAuthenticated) return;
@@ -194,7 +193,6 @@ export default function Profile() {
     );
   }
 
-  // Dashboard quick stats
   const stats = [
     { label: "Active Ads", value: myCars.length },
     { label: "Liked Cars", value: likedCars.length },
@@ -203,7 +201,6 @@ export default function Profile() {
 
   return (
     <div className="max-w-5xl mx-auto p-6">
-      {/* Dashboard quick stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
         {stats.map((stat) => (
           <div
@@ -216,7 +213,6 @@ export default function Profile() {
         ))}
       </div>
 
-      {/* Tabs */}
       <div className="flex gap-2 mb-6 border-b">
         <button
           className={`px-4 py-2 font-semibold ${
@@ -244,7 +240,6 @@ export default function Profile() {
         </button>
       </div>
 
-      {/* Tab content */}
       <div className="bg-white rounded-lg shadow-lg p-6 min-h-[180px]">
         {activeTab === "ads" && (
           <>

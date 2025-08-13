@@ -26,7 +26,7 @@ const OwnerGuard = ({ children }) => {
               setIsOwner(false);
             }
           } else {
-            console.log("No such car document!");
+            console.error("No such car document!");
             setIsOwner(false);
           }
         } catch (error) {

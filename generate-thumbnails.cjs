@@ -1,4 +1,3 @@
-// generate-thumbnails.cjs
 const sharp = require("sharp");
 const path = require("path");
 const fs = require("fs");
@@ -13,7 +12,6 @@ if (!inputPath) {
 const baseName = path.basename(inputPath).replace(/\.[^/.]+$/, "");
 const thumbnailsDir = path.join(__dirname, "public", "images", "cars", "thumbnails");
 
-// Създай папката, ако не съществува
 if (!fs.existsSync(thumbnailsDir)) {
   fs.mkdirSync(thumbnailsDir, { recursive: true });
 }

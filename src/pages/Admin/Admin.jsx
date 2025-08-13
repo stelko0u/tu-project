@@ -127,7 +127,7 @@ export default function AdminPage() {
     setLoading(true);
     try {
       await deleteDoc(doc(db, "cars", carToDeleteId));
-      await handleCarsClick(); // refresh
+      await handleCarsClick();
     } catch (err) {
       setError(err);
     } finally {
@@ -141,7 +141,7 @@ export default function AdminPage() {
     setLoading(true);
     try {
       await deleteDoc(doc(db, "contacts", messageToDeleteId));
-      await handleMessagesClick(); // refresh
+      await handleMessagesClick();
     } catch (err) {
       setError(err);
     } finally {
@@ -235,7 +235,6 @@ export default function AdminPage() {
         {renderContent()}
       </main>
 
-      {/* Модали */}
       <DeleteCarModal
         isOpen={isDeleteCarModalOpen}
         onRequestClose={closeDeleteCarModal}

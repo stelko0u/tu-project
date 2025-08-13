@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { getAuth, sendPasswordResetEmail } from "firebase/auth";
-import { Alert } from "../../components/Alert/Alert";
 import { getUserFriendlyMessage } from "../../Context/AuthContext";
 
 const ResetPassword = () => {
@@ -30,15 +29,18 @@ const ResetPassword = () => {
   };
 
   return (
-    <div
-      className="flex justify-center items-center min-h-screen bg-cover bg-center px-2"
-      style={{
-        backgroundImage:
-          "url('/bg.jpg')",
-        // Or use Unsplash: "url('https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=1200&q=80')"
-      }}
-    >
-      <div className="w-full max-w-md bg-white bg-opacity-90 rounded-2xl shadow-2xl p-8 flex flex-col gap-6">
+    <div className="relative flex justify-center items-center min-h-screen px-2">
+      <div
+        className="absolute inset-0 bg-cover bg-center filter blur-sm"
+        style={{
+          backgroundImage:
+            "url('https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=1200&q=80')",
+        }}
+      ></div>
+
+      <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+
+      <div className="relative w-full max-w-md bg-white bg-opacity-90 rounded-2xl shadow-2xl p-8 flex flex-col gap-6 z-10">
         <h1 className="text-3xl font-bold text-blue-700 text-center mb-2">Forgot Password</h1>
         <form onSubmit={handleReset} className="flex flex-col gap-4 w-full">
           {success && (

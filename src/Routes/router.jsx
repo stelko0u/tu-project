@@ -18,7 +18,7 @@ import NotFound from "../pages/NotFound/NotFound.jsx";
 import Profile from "../pages/Profile/Profile.js";
 import FAQ from "../pages/FAQ/faq.jsx";
 import Contacts from "../pages/Contacts/Contacts.jsx";
-import AdminPage from "../pages/Admin/Admin.jsx"
+import AdminPage from "../pages/Admin/Admin.jsx";
 import ForgotPassword from "../pages/ForgotPassword/ForgotPassword.jsx";
 
 import ChatIcon from "../components/ChatIcon/ChatIcon.jsx";
@@ -85,7 +85,10 @@ export const AuthLayout = () => {
   return (
     <>
       <div>
-        <Link to="/" className="inline absolute m-1 bg-white rounded-full px-3 py-2 text-black font-bold">
+        <Link
+          to="/"
+          className="inline absolute m-1 bg-white rounded-full px-3 py-2 text-black font-bold z-[100]"
+        >
           Go to home
         </Link>
       </div>
@@ -103,7 +106,7 @@ export const router = createBrowserRouter([
       { path: "/catalog", element: <Catalog /> },
       { path: "/faq", element: <FAQ /> },
       { path: "/contact", element: <Contacts /> },
-      { path: "/forgot-password", element: <ForgotPassword /> },
+
       { path: "/reset-password", element: <ResetPassword /> },
       { path: "/__/auth/action", element: <AuthActionHandler /> },
       { path: "/verify-email", element: <EmailVerificationPage /> },
@@ -147,6 +150,7 @@ export const router = createBrowserRouter([
     element: <AuthLayout />,
     children: [
       { path: "/register", element: <Register /> },
+      { path: "/forgot-password", element: <ForgotPassword /> },
       { path: "/login", element: <Login /> },
     ],
   },

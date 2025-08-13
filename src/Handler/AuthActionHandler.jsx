@@ -1,4 +1,3 @@
-// /pages/AuthActionHandler/AuthActionHandler.jsx
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { getAuth, applyActionCode, verifyPasswordResetCode } from "firebase/auth";

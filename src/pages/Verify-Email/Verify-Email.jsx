@@ -1,4 +1,3 @@
-// /pages/Verify-Email/Verify-Email.jsx
 import { useSearchParams } from "react-router-dom";
 
 export default function VerifyEmailPage() {

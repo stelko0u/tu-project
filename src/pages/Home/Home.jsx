@@ -36,7 +36,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 flex flex-col">
-      {/* Hero Section */}
       <section className="relative w-full h-[320px] md:h-[400px] lg:h-[480px] flex items-center justify-center">
         <img
           src={homeWelcome}
@@ -63,7 +62,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features Section */}
       <section className="max-w-6xl mx-auto py-10 px-4">
         <h2 className="text-2xl md:text-3xl font-bold text-blue-700 text-center mb-8">
           Why Choose AutoCars?
