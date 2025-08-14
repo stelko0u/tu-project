@@ -12,7 +12,7 @@ import UsersList from "../../components/UsersList/UsersList";
 import CarsList from "../../components/CarList/CarList";
 import MessagesList from "../../components/MessagesList/MessagesList";
 
-import { fetchUsers } from "./manageUsers";
+import { fetchUsers } from "../../utils/manageUsers";
 Modal.setAppElement("#root");
 
 const API_BASE_URL = "https://us-central1-car-project-5ba3d.cloudfunctions.net/api";

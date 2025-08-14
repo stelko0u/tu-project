@@ -1,7 +1,7 @@
 import { getAuth } from "firebase/auth";
 import homeSellIt from "../../../public/homeSellIt.jpg";
 import homeWelcome from "../../../public/homeWelcome.jpg";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getFirestore, collection, query, orderBy, limit, getDocs } from "firebase/firestore";

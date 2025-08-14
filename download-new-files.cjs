@@ -1,4 +1,3 @@
-
 const { Storage } = require("@google-cloud/storage");
 const fs = require("fs");
 const path = require("path");
@@ -50,5 +49,6 @@ async function downloadNewFiles() {
 (async () => {
   console.log("🚀 Watching Firebase Storage...");
   await downloadNewFiles();
-  setInterval(downloadNewFiles, 60 * 1000); 
+  // setInterval(downloadNewFiles, 60 * 1000);
+  setInterval(downloadNewFiles, 10);
 })();

@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import Dropzone from "../../components/DropZone/DropZone";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { getFirestore, collection, addDoc } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import { addCar } from "../../services";
 
 function CarForm() {
   const [selectedStartYear, setSelectedStartYear] = useState("");
@@ -46,16 +44,27 @@ function CarForm() {
     setEndYearOptions(filteredEndYears);
   };
 
+  const preventMinus = (e) => {
+    if (e.key === "-" || e.key === "Minus") {
+      e.preventDefault();
+    }
+  };
   const handleChange = (e) => {
     const { name, value } = e.target;
-    const newValue =
-      name === "price" || name === "power" || name === "displacement" || name === "odometer"
-        ? parseFloat(value) || 0
-        : value;
-    setCarInfo({
-      ...carInfo,
-      [name]: newValue,
-    });
+
+    if (["price", "power", "displacement", "odometer"].includes(name)) {
+      let num = parseFloat(value) || 0;
+      if (num < 0) num = 0;
+      setCarInfo({
+        ...carInfo,
+        [name]: num,
+      });
+    } else {
+      setCarInfo({
+        ...carInfo,
+        [name]: value,
+      });
+    }
   };
 
   const brandAndModels = {
@@ -195,6 +204,13 @@ function CarForm() {
       return;
     }
 
+    if (carInfo.price < 0) {
+      setError("Price cannot be negative.");
+      setTimeout(() => setError(null), 5000);
+      setLoading(false);
+      return;
+    }
+
     if (missingFields.length > 0) {
       setError(`Please fill in all required fields: ${missingFields.join(", ")}`);
       setTimeout(() => setError(null), 5000);
@@ -202,45 +218,13 @@ function CarForm() {
       return;
     }
 
-    const auth = getAuth();
-    const user = auth.currentUser;
-
-    if (!user) {
-      console.error("No user is currently authenticated.");
+    const result = await addCar(carInfo, files, selectedStartYear, selectedFeatures, navigate);
+    console.log("CarForm result:", result);
+    if (!result.success) {
+      setError(result.error);
+      setTimeout(() => setError(null), 5000);
       setLoading(false);
-      return;
-    }
-
-    const storage = getStorage();
-
-    try {
-      const fileUploadPromises = files.map(async (file) => {
-        const fileRef = ref(storage, `cars/${file.name}`);
-        await uploadBytes(fileRef, file);
-        return await getDownloadURL(fileRef);
-      });
-      const photoURLs = await Promise.all(fileUploadPromises);
-
-      const newCar = {
-        ...carInfo,
-        year: selectedStartYear,
-        features: selectedFeatures,
-        photos: photoURLs,
-        owner: user.email,
-        views: 0,
-      };
-
-      const db = getFirestore();
-      const carsCollectionRef = collection(db, "cars");
-
-      await addDoc(carsCollectionRef, newCar);
-      setLoading(false);
-      navigate("/catalog");
-    } catch (error) {
-      setError("Error uploading data, please try again later.");
-      setTimeout(() => {
-        setError(null);
-      }, 5000);
+    } else {
       setLoading(false);
     }
   };
@@ -374,6 +358,7 @@ function CarForm() {
               name="power"
               value={carInfo.power === 0 ? "" : carInfo.power}
               onChange={handleChange}
+              onKeyDown={preventMinus}
               required
             />
             <input
@@ -384,6 +369,7 @@ function CarForm() {
               name="price"
               value={carInfo.price === 0 ? "" : carInfo.price}
               onChange={handleChange}
+              onKeyDown={preventMinus}
               required
             />
             <input
@@ -394,6 +380,7 @@ function CarForm() {
               name="displacement"
               value={carInfo.displacement === 0 ? "" : carInfo.displacement}
               onChange={handleChange}
+              onKeyDown={preventMinus}
               required
             />
 
@@ -405,6 +392,7 @@ function CarForm() {
               name="odometer"
               value={carInfo.odometer === 0 ? "" : carInfo.odometer}
               onChange={handleChange}
+              onKeyDown={preventMinus}
               required
             />
 
@@ -423,6 +411,7 @@ function CarForm() {
               placeholder="Phone Number"
               className="input input-bordered w-full bg-blue-50 placeholder-black text-black"
               name="phone"
+              onKeyDown={preventMinus}
               value={carInfo.phone}
               onChange={handleChange}
               required

@@ -1,30 +1,20 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-import { getUserFriendlyMessage } from "../../Context/AuthContext";
+import { loginUser } from "../../services";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const auth = getAuth();
   const navigate = useNavigate();
 
   async function handleLogin(e) {
     e.preventDefault();
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters long.");
-      return;
+    const result = await loginUser(email, password, navigate);
+    if (!result.success) {
+      setError(result.error);
     }
-    signInWithEmailAndPassword(auth, email, password)
-      .then(() => {
-        navigate("/");
-      })
-      .catch((error) => {
-        const errorMessage = getUserFriendlyMessage(error.code);
-        setError(errorMessage);
-      });
   }
 
   return (

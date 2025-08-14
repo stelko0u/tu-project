@@ -282,13 +282,20 @@ export default function Details() {
               </div>
               <div className="flex gap-2">
                 {!isOwner && isAuthenticated && user && (
-                  <button
-                    className="bg-blue-500 text-white lg:px-6 lg:py-2 px-4 py-2 ml-2 rounded-lg shadow hover:bg-blue-600 transition-all disabled:bg-blue-800 disabled:cursor-not-allowed"
-                    onClick={() => setIsChatOpen(true)}
-                    disabled={!user.emailVerified}
-                  >
-                    {verifyEmail ? "Chat" : "Verify Email"}
-                  </button>
+                  <div className="relative group">
+                    <button
+                      className="bg-blue-500 text-white lg:px-6 lg:py-2 px-4 py-2 ml-2 rounded-lg shadow hover:bg-blue-600 transition-all disabled:bg-blue-800 disabled:cursor-not-allowed"
+                      onClick={() => setIsChatOpen(true)}
+                      disabled={!user.emailVerified}
+                    >
+                      {verifyEmail ? "Chat" : "Verify Email"}
+                    </button>
+                    {!verifyEmail && (
+                      <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 w-48 bg-gray-700 text-white text-sm p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                        Please verify your email to start chatting. Go to your profile settings to verify.
+                      </div>
+                    )}
+                  </div>
                 )}
 
                 {isOwner && isAuthenticated && (

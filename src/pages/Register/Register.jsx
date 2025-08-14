@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-import { getFirestore, doc, setDoc } from "firebase/firestore";
-import { getUserFriendlyMessage } from "../../Context/AuthContext";
+import { registerUser } from "../../services";
 
 const Register = () => {
   const [email, setEmail] = useState("");
@@ -11,9 +9,7 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
-  const auth = getAuth();
   const navigate = useNavigate();
-  const db = getFirestore();
 
   async function handleRegister(e) {
     e.preventDefault();
@@ -29,20 +25,11 @@ const Register = () => {
       return;
     }
 
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await setDoc(doc(db, "users", userCredential.user.uid), {
-        name,
-        phone,
-        email,
-      });
-      navigate("/");
-    } catch (error) {
-      const errorMessage = getUserFriendlyMessage(error.code);
-      setError(errorMessage);
+    const result = await registerUser(email, password, name, phone, navigate);
+    if (!result.success) {
+      setError(result.error);
     }
   }
-
   return (
     <div className="relative flex justify-center items-center min-h-screen px-2">
       <div
