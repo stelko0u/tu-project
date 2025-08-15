@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { registerUser } from "../../services";
+import { getFriendlyMessages } from "../../Context/AuthContext";
 
 const Register = () => {
   const [email, setEmail] = useState("");
@@ -25,9 +26,13 @@ const Register = () => {
       return;
     }
 
-    const result = await registerUser(email, password, name, phone, navigate);
-    if (!result.success) {
-      setError(result.error);
+    try {
+      const result = await registerUser(email, password, name, phone, navigate);
+      if (!result.success) {
+        setError(result.error);
+      }
+    } catch (error) {
+      setError(getFriendlyMessages(error));
     }
   }
   return (

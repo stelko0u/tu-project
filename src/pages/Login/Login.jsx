@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../../services";
+import { getFriendlyMessages } from "../../Context/AuthContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -11,9 +12,13 @@ const Login = () => {
 
   async function handleLogin(e) {
     e.preventDefault();
-    const result = await loginUser(email, password, navigate);
-    if (!result.success) {
-      setError(result.error);
+    try {
+      const result = await loginUser(email, password, navigate);
+      if (!result.success) {
+        setError(result.error);
+      }
+    } catch (error) {
+      setError(getFriendlyMessages(error));
     }
   }
 

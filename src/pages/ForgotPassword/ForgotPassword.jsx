@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { getAuth, sendPasswordResetEmail } from "firebase/auth";
-import { getUserFriendlyMessage } from "../../Context/AuthContext";
+import { getFriendlyMessages } from "../../Context/AuthContext";
 
 const ResetPassword = () => {
   const [email, setEmail] = useState("");
@@ -50,7 +50,7 @@ const ResetPassword = () => {
           )}
           {error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded text-center font-semibold mb-2">
-              {getUserFriendlyMessage(error)}
+              {getFriendlyMessages(error)}
             </div>
           )}
           <div>

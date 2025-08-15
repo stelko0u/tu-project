@@ -28,3 +28,5 @@ serviceAccountKey.json
 service-account-key.json
 npmrundev.txt
 verifyEmail.cjs
+test-results
+playwright-report

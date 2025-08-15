@@ -63,7 +63,7 @@ export const FireBaseErrors = {
   TooManyRequests: "auth/too-many-requests",
   UserNotFound: "auth/user-not-found",
 };
-export const getUserFriendlyMessage = (error) => {
+export const getFriendlyMessages = (error) => {
   const errorCode = error?.code;
 
   switch (errorCode) {

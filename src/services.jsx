@@ -6,7 +6,7 @@ import {
   sendEmailVerification,
 } from "firebase/auth";
 import { getFirestore, doc, setDoc, collection, addDoc, updateDoc, getDoc } from "firebase/firestore";
-import { getUserFriendlyMessage } from "./Context/AuthContext";
+import { getFriendlyMessages } from "./Context/AuthContext";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export const sendVerificationEmail = async (user) => {
@@ -37,7 +37,7 @@ export const registerUser = async (email, password, name, phone, navigate) => {
 
     return { success: true };
   } catch (error) {
-    const errorMessage = getUserFriendlyMessage(error.code);
+    const errorMessage = getFriendlyMessages(error.code);
     return { success: false, error: errorMessage };
   }
 };
@@ -52,7 +52,7 @@ export const loginUser = async (email, password, navigate) => {
     navigate("/");
     return { success: true };
   } catch (error) {
-    const errorMessage = getUserFriendlyMessage(error.code);
+    const errorMessage = getFriendlyMessages(error.code);
     return { success: false, error: errorMessage };
   }
 };
